@@ -45,6 +45,13 @@ class Var:
 
     PORT: int = int(os.getenv("PORT", "8080"))
     BIND_ADDRESS: str = os.getenv("BIND_ADDRESS", "0.0.0.0")
+    
+    # On Render, the socket must always bind to 0.0.0.0.
+    # If BIND_ADDRESS is set to a domain (e.g. smart-book-to-link.onrender.com) or public IP,
+    # it will fail to bind since the container does not own that IP.
+    if os.getenv("RENDER") == "true":
+        BIND_ADDRESS = "0.0.0.0"
+
     PING_INTERVAL: int = int(os.getenv("PING_INTERVAL", "840"))
     NO_PORT: bool = str_to_bool(os.getenv("NO_PORT", "True"))
 
@@ -53,7 +60,8 @@ class Var:
     if not OWNER_ID:
         logger.warning("WARNING: OWNER_ID is not set. No user will be granted owner access.")
 
-    FQDN: str = os.getenv("FQDN", "") or BIND_ADDRESS
+    # Fallback to the raw BIND_ADDRESS env value for FQDN if FQDN is not set
+    FQDN: str = os.getenv("FQDN", "") or os.getenv("BIND_ADDRESS", "") or BIND_ADDRESS
     HAS_SSL: bool = str_to_bool(os.getenv("HAS_SSL", "True"))
     PROTOCOL: str = "https" if HAS_SSL else "http"
     PORT_SEGMENT: str = "" if NO_PORT else f":{PORT}"
