@@ -138,7 +138,7 @@ MSG_BUTTON_CLOSE = "✖ Close"
 # =====================================================================================
 
 MSG_WELCOME = (
-    "⚡ **Welcome to Thunder File to Link Bot, {user_name}!** ⚡\n\n"
+    "⚡ **Welcome to PageStream Bot, {user_name}!** ⚡\n\n"
     "I am an advanced, high-performance file sharing bot that instantly transforms your files into high-speed direct download and streaming links.\n\n"
     "📖 **E-Book & Media Viewer Integration:**\n"
     "└ View PDFs, EPUBs, and Comics (CBR/CBZ) directly online using our premium built-in reader!\n\n"
@@ -149,7 +149,7 @@ MSG_WELCOME = (
 )
 
 MSG_HELP = (
-    "📘 **Thunder Bot - User & Guide Book** 📖\n\n"
+    "📘 **PageStream Bot - User & Guide Book** 📖\n\n"
     "Get high-speed download links, streaming paths, and inline E-Book view links for any file.\n\n"
     "🚀 **How to Generate Links:**\n"
     "• **Private Chats:** Send or forward any file directly here.\n"
@@ -172,7 +172,7 @@ MSG_HELP = (
 )
 
 MSG_ABOUT = (
-    "⚡ **About Thunder File to Link Bot** ℹ️\n\n"
+    "⚡ **About PageStream Bot** ℹ️\n\n"
     "A state-of-the-art Telegram bot built for ultra-fast media streaming, direct downloading, and inline file viewing.\n\n"
     "🚀 **Outstanding Features:**\n"
     "• **Built-In E-Book Viewer:** Read Epub, PDF, and Comics directly inside the web browser with sharp text rendering.\n"
@@ -238,9 +238,8 @@ MSG_COMMUNITY_CHANNEL = "📢 **{channel_title}:** 🔒 Join this channel to use
 # ====== PROCESSING MESSAGES ======
 # =====================================================================================
 
-# ------ General File Processing ------
-MSG_PROCESSING_REQUEST = "⚡ **Thunder Core:** Processing your request, please wait..."
-MSG_PROCESSING_FILE = "⏳ **Thunder Core:** Analyzing and preparing your file..."
+MSG_PROCESSING_REQUEST = "⚡ **PageStream Core:** Processing your request, please wait..."
+MSG_PROCESSING_FILE = "⏳ **PageStream Core:** Analyzing and preparing your file..."
 MSG_NEW_FILE_REQUEST = (
     "🔔 **New File Requested**\n\n"
     "👤 **Requested By:** [{source_info}](tg://user?id={id_}) (`{id_}`)\n\n"
