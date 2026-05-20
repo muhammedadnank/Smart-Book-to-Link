@@ -1,22 +1,23 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="Smart Book to Link Logo" width="130" style="border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.4)">
-  <h1 align="center">📚 Smart Book to Link</h1>
-  <p align="center"><i>High-Performance Telegram Streamer & Reader for eBooks, Audiobooks, Documents & Archives</i></p>
+  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="130" style="border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.4)">
+  <h1 align="center">📄 PageStream</h1>
+  <p align="center"><i>High-Performance Telegram File-to-Link Bot with built-in eBook, Audiobook & Media Streaming</i></p>
 </p>
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.13+"></a>
   <a href="https://github.com/Mayuri-Chan/pyrofork"><img src="https://img.shields.io/badge/Pyrofork-2.3.69-e74c3c?style=for-the-badge" alt="Pyrofork"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=27ae60" alt="License"></a>
-  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main%20(stable)-2ecc71?style=for-the-badge&logo=git" alt="Branch: main"></a>
+  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/pagestream-rename"><img src="https://img.shields.io/badge/branch-pagestream--rename-6c3cef?style=for-the-badge&logo=git" alt="Branch: pagestream-rename"></a>
   <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="28"></a>
 </p>
 
 ---
 
 > [!NOTE]
-> **You are on the `main` branch — the stable reference build (`Smart-Book-to-Link-project`).**
-> For the actively developed, feature-rich version with batch processing, rate limiting, token auth, and optimized database, see the [`master` branch](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master).
+> **You are on the `pagestream-rename` branch — full package rename from Thunder → PageStream.**
+> For the stable reference build, see [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main).
+> For the feature-rich active build, see [`master`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master).
 
 ---
 
@@ -42,9 +43,10 @@
 
 ## About The Project
 
-**Smart Book to Link** is a premium, specialized Telegram bot that transforms media files into high-speed HTTP(S) streaming links. It strictly accepts literary and archival content — eBooks, audiobooks, documents, and archives — and serves each through a purpose-built, responsive web viewer.
+**PageStream** is a premium, specialized Telegram bot that transforms media files into high-speed HTTP(S) streaming and download links. It strictly accepts literary and archival content — eBooks, audiobooks, documents, and archives — and serves each through a purpose-built, responsive web viewer directly in the browser.
 
 ### 💡 Ideal For
+
 | Audience | Use Case |
 |---|---|
 | 📖 E-Reading Buffs | Stream & read books directly in-browser, no app required |
@@ -60,13 +62,16 @@
 |---|---|---|
 | [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main) | **`Smart-Book-to-Link-project`** — stable reference build | ✅ Stable |
 | [`master`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master) | `claude v2` — optimized, feature-rich active build | 🚀 Active Dev |
+| [`pagestream-rename`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/pagestream-rename) | **PageStream** — full package rename from Thunder | 🔄 Latest |
 
-**Upgrade to `master` for:**
+**`pagestream-rename` branch includes all of:**
+- ✅ Full Python package rename: `Thunder/` → `PageStream/`
 - ⚡ Optimized async database with connection pooling and indexed queries
 - 🔁 Batch `/link N` command for bulk link generation
 - 🛡️ Per-user rate limiting (`RATE_LIMIT_ENABLED`)
 - 🔐 Time-limited access token system (`TOKEN_ENABLED`)
 - 📡 Keep-alive service for free-tier hosting platforms
+- 🎨 All UI messages rebranded to PageStream
 
 ---
 
@@ -113,8 +118,9 @@ Adapts dynamically per format:
 
 - Full playback controls with seek bar and duration display
 - Responsive layout — desktop & mobile optimized
-- Atmospheric animated backdrop that reacts to player state
+- Atmospheric animated vinyl backdrop that reacts to player state
 - Metadata display (filename, format, file size)
+- External player support: VLC, MX Player, Infuse, MPV, and more
 
 ---
 
@@ -142,12 +148,15 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
+| `NAME` | Bot application name shown in logs | `PageStreamF2L` |
 | `MULTI_TOKEN1` | Extra bot token for load balancing | *(empty)* |
 | `MULTI_TOKEN2` | Second extra bot token | *(empty)* |
 | `FORCE_CHANNEL_ID` | Channel users must join before using the bot | *(empty)* |
 | `RATE_LIMIT_ENABLED` | Enable per-user anti-spam rate limiting | `False` |
 | `TOKEN_ENABLED` | Enable time-limited access tokens | `False` |
 | `TOKEN_TTL_HOURS` | Token validity in hours | `24` |
+| `SLEEP_THRESHOLD` | FloodWait sleep threshold in seconds | `600` |
+| `WORKERS` | Number of async worker threads | `8` |
 
 </details>
 
@@ -163,6 +172,8 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 | `/link [N]` | Generate link(s). Reply to the first file and pass count for batch mode, e.g. `/link 5` |
 | `/ping` | Check bot response latency |
 | `/help` | Show usage guide and accepted formats |
+| `/about` | View bot info, features, and version |
+| `/dc` | Inspect Telegram Data Center info for a file or user |
 
 ### 🔧 Admin Commands
 
@@ -174,6 +185,8 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 | `/authorize` / `/deauthorize` | Grant / revoke permanent access |
 | `/broadcast` | Send a message to all users |
 | `/log` | Fetch the latest server execution log |
+| `/restart` | Restart the bot process |
+| `/speedtest` | Run a server speed test |
 
 ---
 
@@ -193,8 +206,8 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 ### 🐳 Docker
 
 ```bash
-# 1. Clone the main branch
-git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
+# 1. Clone the pagestream-rename branch
+git clone -b pagestream-rename https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
 # 2. Configure environment
@@ -202,8 +215,8 @@ cp config_sample.env config.env
 nano config.env   # fill in your values
 
 # 3. Build & run
-docker build -t smartbook .
-docker run -d --name smartbook --env-file config.env -p 8080:8080 smartbook
+docker build -t pagestream .
+docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
 ```
 
 ---
@@ -211,8 +224,8 @@ docker run -d --name smartbook --env-file config.env -p 8080:8080 smartbook
 ### 🖥️ Manual / Virtualenv
 
 ```bash
-# 1. Clone the main branch
-git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
+# 1. Clone the pagestream-rename branch
+git clone -b pagestream-rename https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
 # 2. Create and activate virtual environment
