@@ -73,6 +73,9 @@ async def render_media_page(
 ) -> str:
     # NOTE: src must be a pre-encoded URL. Templates use |safe to avoid double-encoding.
     category = get_file_category(file_name)
+    ebook_type = _get_ebook_type(file_name, mime_type)
+    if ebook_type:
+        category = 'ebooks'
 
     if requested_action != 'stream' or category in ('archives', 'documents'):
         template = template_env.get_template('dl.html')
@@ -83,15 +86,12 @@ async def render_media_page(
         return await template.render_async(**context)
 
     if category == 'ebooks':
-        lower_name = file_name.lower()
-        if lower_name.endswith('.epub'):
-            ebook_type = 'epub'
-        elif lower_name.endswith('.pdf'):
-            ebook_type = 'pdf'
-        elif lower_name.endswith('.cbz') or lower_name.endswith('.cbr'):
-            ebook_type = 'comic'
-        else:
-            ebook_type = 'offline'
+        if not ebook_type:
+            lower_name = file_name.lower()
+            if lower_name.endswith('.cbz') or lower_name.endswith('.cbr'):
+                ebook_type = 'comic'
+            else:
+                ebook_type = 'offline'
 
         template = template_env.get_template('ebook.html')
         context = {

@@ -1,7 +1,8 @@
 *.py[cod]
 *$py.class
 *.so
-.venv/
+*venv/
+*.venv/
 .Python
 config.env
 log.text

@@ -349,8 +349,9 @@
     <div class="toast-stack" id="toastStack" aria-live="polite"></div>
 
     <!-- Config for external script (template injection happens here) -->
+    <div id="config-data" data-src="{{ src|safe }}" style="display: none;"></div>
     <script>
-        window.__CINEMA_CONFIG__ = { src: {{ src | tojson }} };
+        window.__CINEMA_CONFIG__ = { src: document.getElementById('config-data').getAttribute('data-src') };
     </script>
     <!-- Main Script (CDN-hosted) -->
     <script src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/Obsidian%20Ember/script.js"></script>
