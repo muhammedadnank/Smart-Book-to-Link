@@ -225,7 +225,7 @@ pip install -r requirements.txt
 # 4. Configure and run
 cp config_sample.env config.env
 nano config.env
-python3 -m Thunder
+python3 -m PageStream
 ```
 
 ---

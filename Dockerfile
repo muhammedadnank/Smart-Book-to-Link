@@ -20,4 +20,4 @@ RUN pip install --upgrade pip && \
 
 COPY . .
 
-CMD ["bash", "thunder.sh"]
+CMD ["bash", "pagestream.sh"]
