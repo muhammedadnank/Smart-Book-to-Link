@@ -809,16 +809,17 @@
                 scale = wrapperWidth / unscaledViewport.width;
             }
             
-            const viewport = page.getViewport({ scale: scale });
+            const dpr = Math.min(2, window.devicePixelRatio || 1);
+            const viewport = page.getViewport({ scale: scale * dpr });
             const canvas   = document.createElement('canvas');
             canvas.width   = viewport.width;
             canvas.height  = viewport.height;
             canvas.style.width  = '100%';
-            canvas.style.maxWidth = viewport.width + 'px';
             canvas.style.height = 'auto';
 
             const wrap = document.createElement('div');
             wrap.className = 'pdf-page-wrap';
+            wrap.style.maxWidth = (viewport.width / dpr) + 'px';
             wrap.appendChild(canvas);
             pdfViewer.appendChild(wrap);
 
