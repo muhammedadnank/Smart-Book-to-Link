@@ -351,7 +351,14 @@
     <!-- Config for external script (template injection happens here) -->
     <div id="config-data" data-src="{{ src|safe }}" style="display: none;"></div>
     <script>
-        window.__CINEMA_CONFIG__ = { src: document.getElementById('config-data').getAttribute('data-src') };
+        let srcUrl = document.getElementById('config-data').getAttribute('data-src');
+        try {
+            const parsedUrl = new URL(srcUrl);
+            parsedUrl.protocol = window.location.protocol;
+            parsedUrl.host = window.location.host;
+            srcUrl = parsedUrl.toString();
+        } catch (e) {}
+        window.__CINEMA_CONFIG__ = { src: srcUrl };
     </script>
     <!-- Main Script (CDN-hosted) -->
     <script src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/Obsidian%20Ember/script.js"></script>
