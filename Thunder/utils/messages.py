@@ -213,15 +213,14 @@ MSG_DC_UNKNOWN = "Unknown"
 # ------ File Link Generation ------
 MSG_DM_SINGLE_PREFIX = "📬 **From {chat_title}**\n"
 MSG_LINKS = (
-    "✨ **Your File Links are Ready!** ✨\n\n"
-    "📁 **File:** `{file_name}`\n"
-    "💾 **Size:** `{file_size}`\n\n"
-    "⚡ **Quick Links:**\n"
-    "• 🚀 **Direct Download:**\n"
-    "  `{download_link}`\n"
-    "• 🖥️ **Stream & Read Online:**\n"
-    "  `{stream_link}`\n\n"
-    "⌛ *Links remain active as long as the file is available on Telegram.*"
+    "⚡ **Your File Links are Ready!** ⚡\n\n"
+    "📁 **File Name:** `{file_name}`\n"
+    "💾 **File Size:** `{file_size}`\n\n"
+    "📥 **Direct Download Link:**\n"
+    "└ `{download_link}`\n\n"
+    "📺 **Stream / Web Reader:**\n"
+    "└ `{stream_link}`\n\n"
+    "📖 *Supports inline viewing for PDFs, EPUBs, Comics, and Media streaming.*"
 )
 
 # =====================================================================================
