@@ -1,0 +1,152 @@
+# PageStream/utils/render_template.py
+
+import asyncio
+import urllib.parse
+
+from jinja2 import Environment, FileSystemLoader, select_autoescape
+from pyrogram.errors import FloodWait
+
+from PageStream.bot import StreamBot
+from PageStream.server.exceptions import InvalidHash
+from PageStream.utils.file_properties import get_fname, get_media, get_uniqid, get_file_category
+from PageStream.utils.logger import logger
+from PageStream.vars import Var
+
+template_env = Environment(
+    loader=FileSystemLoader('PageStream/template'),
+    autoescape=select_autoescape(enabled_extensions=("html",), default_for_string=True),
+    enable_async=True,
+    cache_size=200,
+    auto_reload=False,
+    optimized=True
+)
+
+# MIME types that map to the ebook viewer
+_EBOOK_MIME_MAP: dict[str, str] = {
+    "application/epub+zip": "epub",
+    "application/epub":     "epub",
+    "application/x-epub":   "epub",
+    "application/pdf":      "pdf",
+    "application/x-pdf":    "pdf",
+    "application/acrobat":  "pdf",
+    "application/vnd.pdf":  "pdf",
+    "text/pdf":             "pdf",
+    "text/x-pdf":           "pdf",
+}
+
+# Extension fallback map
+_EBOOK_EXT_MAP: dict[str, str] = {
+    ".epub": "epub",
+    ".pdf":  "pdf",
+}
+
+
+def _get_ebook_type(file_name: str, mime_type: str | None = None) -> str | None:
+    """
+    Return 'epub' or 'pdf' if the file should open in the ebook viewer.
+
+    Detection order (most reliable first):
+      1. MIME type — works even when Telegram strips the file extension.
+      2. File extension — fallback when mime_type is absent or generic.
+    """
+    if mime_type:
+        base_mime = mime_type.split(";")[0].strip().lower()
+        ebook_type = _EBOOK_MIME_MAP.get(base_mime)
+        if ebook_type:
+            return ebook_type
+
+    lower = (file_name or "").lower()
+    for ext, ebook_type in _EBOOK_EXT_MAP.items():
+        if lower.endswith(ext):
+            return ebook_type
+
+    return None
+
+
+async def render_media_page(
+    file_name: str,
+    src: str,
+    requested_action: str | None = None,
+    mime_type: str | None = None,
+) -> str:
+    # NOTE: src must be a pre-encoded URL. Templates use |safe to avoid double-encoding.
+    category = get_file_category(file_name)
+    ebook_type = _get_ebook_type(file_name, mime_type)
+    if ebook_type:
+        category = 'ebooks'
+
+    if requested_action != 'stream' or category in ('archives', 'documents'):
+        template = template_env.get_template('dl.html')
+        return await template.render_async(file_name=file_name, src=src)
+
+    if category == 'ebooks':
+        if not ebook_type:
+            lower_name = file_name.lower()
+            if lower_name.endswith('.cbz') or lower_name.endswith('.cbr'):
+                # CBR is RAR-compressed; JSZip cannot open it — fall back to
+                # the offline message so the user downloads it instead of
+                # seeing a broken comic viewer.
+                ebook_type = 'comic' if lower_name.endswith('.cbz') else 'offline'
+            else:
+                ebook_type = 'offline'
+
+        template = template_env.get_template('ebook.html')
+        return await template.render_async(
+            file_name=file_name,
+            src=f"{src}?disposition=inline",
+            file_type=ebook_type,
+        )
+
+    if category == 'audiobooks':
+        template = template_env.get_template('req.html')
+        return await template.render_async(
+            heading=f"Listen to {file_name}",
+            file_name=file_name,
+            src=f"{src}?disposition=inline",
+        )
+
+    template = template_env.get_template('dl.html')
+    return await template.render_async(file_name=file_name, src=src)
+
+
+async def render_page(
+    message_id: int,
+    secure_hash: str,
+    requested_action: str | None = None
+) -> str:
+    try:
+        try:
+            message = await StreamBot.get_messages(
+                chat_id=int(Var.BIN_CHANNEL),
+                message_ids=message_id
+            )
+        except FloodWait as e:
+            await asyncio.sleep(e.value)
+            message = await StreamBot.get_messages(
+                chat_id=int(Var.BIN_CHANNEL),
+                message_ids=message_id
+            )
+
+        if not message:
+            raise InvalidHash("Message not found")
+
+        file_unique_id = get_uniqid(message)
+        file_name      = get_fname(message)
+
+        if not file_unique_id or file_unique_id[:6] != secure_hash:
+            raise InvalidHash("File unique ID or secure hash mismatch during rendering.")
+
+        # get_media is now imported at the top of this module — no inline import needed.
+        _media    = get_media(message)
+        mime_type = getattr(_media, 'mime_type', None) if _media else None
+
+        quoted_filename = urllib.parse.quote(file_name.replace('/', '_'), safe="")
+        src = urllib.parse.urljoin(Var.URL, f'{secure_hash}{message_id}/{quoted_filename}')
+        return await render_media_page(file_name, src, requested_action, mime_type=mime_type)
+
+    except Exception as e:
+        logger.error(
+            f"Error in render_page for message_id {message_id} and hash {secure_hash}: {e}",
+            exc_info=True
+        )
+        raise
