@@ -8,16 +8,16 @@
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.13+"></a>
   <a href="https://github.com/Mayuri-Chan/pyrofork"><img src="https://img.shields.io/badge/Pyrofork-2.3.69-e74c3c?style=for-the-badge" alt="Pyrofork"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=27ae60" alt="License"></a>
-  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/pagestream-rename"><img src="https://img.shields.io/badge/branch-pagestream--rename-6c3cef?style=for-the-badge&logo=git" alt="Branch: pagestream-rename"></a>
+  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main%20(stable)-2ecc71?style=for-the-badge&logo=git" alt="Branch: main"></a>
   <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="28"></a>
 </p>
 
 ---
 
 > [!NOTE]
-> **You are on the `pagestream-rename` branch — full package rename from Thunder → PageStream.**
-> For the stable reference build, see [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main).
-> For the feature-rich active build, see [`master`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master).
+> **You are on the `main` branch — the stable reference build (`Smart-Book-to-Link-project`).**
+> This branch has been upgraded to the new PageStream package naming conventions.
+> For the actively developed, feature-rich version with batch processing, rate limiting, token auth, and optimized database, see the [`master` branch](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master).
 
 ---
 
@@ -60,18 +60,17 @@
 
 | Branch | Description | Status |
 |---|---|---|
-| [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main) | **`Smart-Book-to-Link-project`** — stable reference build | ✅ Stable |
+| [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main) | **`Smart-Book-to-Link-project`** — stable build, fully renamed to `PageStream` | ✅ Stable |
 | [`master`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master) | `claude v2` — optimized, feature-rich active build | 🚀 Active Dev |
-| [`pagestream-rename`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/pagestream-rename) | **PageStream** — full package rename from Thunder | 🔄 Latest |
 
-**`pagestream-rename` branch includes all of:**
+**Features in `main` / `master`:**
 - ✅ Full Python package rename: `Thunder/` → `PageStream/`
 - ⚡ Optimized async database with connection pooling and indexed queries
 - 🔁 Batch `/link N` command for bulk link generation
 - 🛡️ Per-user rate limiting (`RATE_LIMIT_ENABLED`)
 - 🔐 Time-limited access token system (`TOKEN_ENABLED`)
 - 📡 Keep-alive service for free-tier hosting platforms
-- 🎨 All UI messages rebranded to PageStream
+- 🎨 All UI messages and templates rebranded to PageStream
 
 ---
 
@@ -206,8 +205,8 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 ### 🐳 Docker
 
 ```bash
-# 1. Clone the pagestream-rename branch
-git clone -b pagestream-rename https://github.com/muhammedadnank/Smart-Book-to-Link.git
+# 1. Clone the main branch
+git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
 # 2. Configure environment
@@ -224,8 +223,8 @@ docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
 ### 🖥️ Manual / Virtualenv
 
 ```bash
-# 1. Clone the pagestream-rename branch
-git clone -b pagestream-rename https://github.com/muhammedadnank/Smart-Book-to-Link.git
+# 1. Clone the main branch
+git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
 # 2. Create and activate virtual environment
