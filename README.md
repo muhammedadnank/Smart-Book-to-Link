@@ -11,7 +11,7 @@
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.13%2B-blue?style=for-the-badge&logo=python" alt="Python Version"></a>
   <a href="https://github.com/Mayuri-Chan/pyrofork"><img src="https://img.shields.io/badge/Pyrofork-red?style=for-the-badge" alt="Pyrofork"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=green" alt="License"></a>
-  <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render.svg" alt="Deploy to Render"></a>
+  <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render"></a>
 </p>
 
 <hr>
@@ -158,7 +158,7 @@ Copy `config_sample.env` to `config.env` and customize the variables.
 #### 🚀 Render Deployment (One-Click)
 
 1. Click the button below:
-   [![Deploy to Render](https://render.com/images/deploy-to-render.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
+   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
 2. Fill in the required environment variables:
    * `API_ID`, `API_HASH`, `BOT_TOKEN`, `OWNER_ID`, `BIN_CHANNEL`, and `DATABASE_URL`.
    * For `FQDN`, copy the generated Render URL (e.g. `your-app.onrender.com`) after the deployment finishes, paste it in, and re-deploy.
