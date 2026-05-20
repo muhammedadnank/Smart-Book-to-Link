@@ -99,15 +99,16 @@ async def start_command(bot: Client, msg: Message):
     if link:
         txt += f"\n\n{MSG_COMMUNITY_CHANNEL.format(channel_title=title)}"
     
-    btns = [
+    btns = []
+    if link:
+        btns.append([InlineKeyboardButton(MSG_BUTTON_JOIN_CHANNEL.format(channel_title=title), url=link)])
+    
+    btns.extend([
         [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command"),
          InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command")],
         [InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link/"),
          InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")]
-    ]
-    
-    if link:
-        btns.append([InlineKeyboardButton(MSG_BUTTON_JOIN_CHANNEL.format(channel_title=title), url=link)])
+    ])
     
     try:
         await msg.reply_text(text=txt, reply_markup=InlineKeyboardMarkup(btns))
@@ -123,13 +124,15 @@ async def help_command(bot: Client, msg: Message):
         await log_newusr(bot, msg.from_user.id, msg.from_user.first_name)
     
     txt = MSG_HELP.format(max_files=Var.MAX_BATCH_FILES)
-    btns = [[InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command")]]
-    
     link, title = await get_force_info(bot)
+    btns = []
     if link:
         btns.append([InlineKeyboardButton(MSG_BUTTON_JOIN_CHANNEL.format(channel_title=title), url=link)])
     
-    btns.append([InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")])
+    btns.extend([
+        [InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command"),
+         InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")]
+    ])
     try:
         await msg.reply_text(text=txt, reply_markup=InlineKeyboardMarkup(btns))
     except FloodWait as e:
@@ -144,9 +147,9 @@ async def about_command(bot: Client, msg: Message):
         await log_newusr(bot, msg.from_user.id, msg.from_user.first_name)
     
     btns = [
-        [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command")],
-        [InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link/"),
-         InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")]
+        [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command"),
+         InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link/")],
+        [InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")]
     ]
     
     try:
