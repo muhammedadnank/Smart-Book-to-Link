@@ -121,16 +121,16 @@ MSG_LOG_FILE_MISSING = "⚠️ **Log File Missing:** Could not find the log file
 # ====== BUTTON TEXTS (User-facing) ======
 # =====================================================================================
 
-MSG_BUTTON_STREAM_NOW = "🖥️ Stream"
-MSG_BUTTON_DOWNLOAD = "🚀 Download"
-MSG_BUTTON_GET_HELP = "📖 Get Help"
+MSG_BUTTON_STREAM_NOW = "🖥️ Stream / Read Online"
+MSG_BUTTON_DOWNLOAD = "🚀 Direct Download"
+MSG_BUTTON_GET_HELP = "📘 Get Help Guide"
 MSG_BUTTON_CANCEL_BROADCAST = "🛑 Cancel Broadcast"
 MSG_BUTTON_VIEW_PROFILE = "👤 View User Profile"
-MSG_BUTTON_ABOUT = "ℹ️ About Bot"
+MSG_BUTTON_ABOUT = "ℹ️ About PageStream"
 MSG_BUTTON_JOIN_CHANNEL = "📢 Join {channel_title}"
-MSG_BUTTON_GITHUB = "🛠️ GitHub"
+MSG_BUTTON_GITHUB = "🛠️ GitHub Repository"
 MSG_BUTTON_START_CHAT = "📩 Start Chat"
-MSG_BUTTON_CLOSE = "✖ Close"
+MSG_BUTTON_CLOSE = "✖ Close Panel"
 
 
 # =====================================================================================
@@ -141,11 +141,11 @@ MSG_WELCOME = (
     "⚡ **Welcome to PageStream Bot, {user_name}!** ⚡\n\n"
     "I am an advanced, high-performance file sharing bot that instantly transforms your files into high-speed direct download and streaming links.\n\n"
     "📖 **E-Book & Media Viewer Integration:**\n"
-    "└ View PDFs, EPUBs, and Comics (CBR/CBZ) directly online using our premium built-in reader!\n\n"
+    " View PDFs, EPUBs, and Comics (CBR/CBZ) directly online using our premium built-in reader!\n\n"
     "⚡ **Quick Start Guide:**\n"
     "• **Private Chats:** Send or forward any file directly to me.\n"
     "• **Public Groups:** Reply to a file with `/link` to generate links.\n\n"
-    "👉 *Use the buttons below to explore help or get details.*"
+    "👉 **Use the buttons below to explore help or get details.**"
 )
 
 MSG_HELP = (
@@ -220,7 +220,7 @@ MSG_LINKS = (
     "└ `{download_link}`\n\n"
     "📺 **Stream / Web Reader:**\n"
     "└ `{stream_link}`\n\n"
-    "📖 *Supports inline viewing for PDFs, EPUBs, Comics, and Media streaming.*"
+    "📖 **Supports inline viewing for PDFs, EPUBs, Comics, and Media streaming.**"
 )
 
 # =====================================================================================
