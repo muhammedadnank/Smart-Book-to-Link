@@ -476,7 +476,13 @@
 
 <script>
 (function () {
-    const FILE_URL = "{{ src|safe }}";
+    let FILE_URL = "{{ src|safe }}";
+    try {
+        const parsedUrl = new URL(FILE_URL);
+        parsedUrl.protocol = window.location.protocol;
+        parsedUrl.host = window.location.host;
+        FILE_URL = parsedUrl.toString();
+    } catch (e) {}
     const FILE_NAME = "{{ file_name }}";
     const FILE_TYPE = "{{ file_type }}";   // "epub" or "pdf"
 
