@@ -355,10 +355,38 @@
         }
 
         @media (max-width: 640px) {
-            .sidebar { width: 220px; }
+            .sidebar {
+                position: fixed;
+                top: var(--toolbar-h);
+                left: 0;
+                bottom: 0;
+                z-index: 200;
+                width: min(80vw, 260px);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.6);
+            }
+            .sidebar.hidden {
+                transform: translateX(-100%);
+                width: min(80vw, 260px); /* keep width so animation is smooth */
+            }
             :root { --toolbar-h: 48px; }
+            .toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
             .toolbar-title { display: none; }
             .progress-wrap { display: none; }
+            .nav-arrow { width: 32px; height: 52px; }
+            #pdf-viewer { padding: 12px 8px; gap: 10px; }
+            .font-size-bar { padding: 5px 10px; font-size: 0.68rem; }
+        }
+
+        /* Overlay backdrop for sidebar on mobile */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 190;
+        }
+        @media (max-width: 640px) {
+            .sidebar-backdrop.active { display: block; }
         }
     </style>
 </head>
@@ -397,8 +425,11 @@
         </a>
     </div>
 
+    <!-- Mobile sidebar backdrop -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
     <div class="layout">
-        <nav class="sidebar" id="sidebar">
+        <nav class="sidebar hidden" id="sidebar">
             <div class="sidebar-header">Table of Contents</div>
             <ul class="toc-list" id="toc-list">
                 <li class="toc-item"><a href="#" style="color:var(--text-muted);font-style:italic">Loading…</a></li>
@@ -449,6 +480,7 @@
     const FILE_TYPE = "{{ file_type }}";
 
     const sidebar      = document.getElementById('sidebar');
+    const backdrop     = document.getElementById('sidebar-backdrop');
     const tocList      = document.getElementById('toc-list');
     const epubViewer   = document.getElementById('epub-viewer');
     const pdfViewer    = document.getElementById('pdf-viewer');
@@ -464,8 +496,19 @@
     const nextBtn      = document.getElementById('next-btn');
 
     document.getElementById('btn-toc').addEventListener('click', () => {
+        const isMobile = window.innerWidth <= 640;
         sidebar.classList.toggle('hidden');
+        if (isMobile) {
+            backdrop.classList.toggle('active', !sidebar.classList.contains('hidden'));
+        }
     });
+    backdrop.addEventListener('click', () => {
+        sidebar.classList.add('hidden');
+        backdrop.classList.remove('active');
+    });
+
+    // Auto-hide sidebar on mobile at load
+    if (window.innerWidth <= 640) sidebar.classList.add('hidden');
 
     let epubRendition  = null;
     let currentFontSize = 100;
@@ -700,6 +743,21 @@
         errorScreen.querySelector('.error-icon').textContent  = '📚';
         errorScreen.querySelector('.error-title').textContent = 'Offline Ebook Ready';
     }
+
+    /* ── Touch swipe (mobile page turns) ────────── */
+    let _tx = 0, _ty = 0;
+    document.addEventListener('touchstart', e => {
+        _tx = e.changedTouches[0].clientX;
+        _ty = e.changedTouches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - _tx;
+        const dy = e.changedTouches[0].clientY - _ty;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+            if (dx < 0) nextBtn.click();
+            else        prevBtn.click();
+        }
+    }, { passive: true });
 
     /* ── Keyboard navigation ─────────────────────── */
     document.addEventListener('keydown', e => {

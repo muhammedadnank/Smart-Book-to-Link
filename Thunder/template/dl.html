@@ -7,104 +7,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Downloading: {{ file_name }}</title>
     <meta http-equiv="refresh" content="0;url={{ src|safe }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #0a0a0f;
             --accent-purple: #a855f7;
+            --accent-blue: #6366f1;
             --text-primary: #f3f4f6;
             --text-secondary: #9ca3af;
             --glass-bg: rgba(18, 18, 30, 0.7);
             --glass-border: rgba(255, 255, 255, 0.08);
         }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            text-align: center; 
-            background: var(--bg-primary); 
-            color: var(--text-primary); 
-            margin: 0; 
-            height: 100vh;
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             overflow: hidden;
+            padding: 1rem;
         }
-        
+
         .ambient-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
+            position: fixed;
+            width: 500px;
+            height: 500px;
             background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, transparent 70%);
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             animation: pulse 4s ease-in-out infinite alternate;
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); opacity: 0.5; }
-            100% { transform: scale(1.1); opacity: 0.8; }
+            0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.5; }
+            100% { transform: translate(-50%, -50%) scale(1.15); opacity: 0.85; }
         }
 
-        .container { 
+        .container {
             position: relative;
             z-index: 10;
-            width: 90%;
-            max-width: 500px; 
-            margin: auto; 
+            width: 100%;
+            max-width: 480px;
         }
-        .message { 
+
+        .message {
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            padding: 40px 30px; 
-            border-radius: 24px; 
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            padding: 2.5rem 2rem;
+            border-radius: 24px;
+            box-shadow:
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(24px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: bounce 1.5s ease-in-out infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50%       { transform: translateY(-6px); }
         }
 
         h2 {
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
-            margin-bottom: 12px;
-            font-size: 1.5rem;
-            margin-top: 0;
+            margin-bottom: 0.75rem;
+            font-size: 1.4rem;
         }
 
-        p { 
-            margin-bottom: 24px; 
-            font-size: 0.95rem; 
+        p {
+            margin-bottom: 1.75rem;
+            font-size: 0.92rem;
             color: var(--text-secondary);
-            line-height: 1.6;
+            line-height: 1.65;
             word-break: break-word;
         }
-        
+
         .filename {
             color: var(--text-primary);
             font-weight: 500;
         }
 
-        .btn-download { 
-            display: inline-block;
-            background: linear-gradient(135deg, #6366f1 0%, var(--accent-purple) 100%);
-            color: white; 
-            text-decoration: none; 
-            font-weight: 500; 
-            padding: 12px 28px;
-            border-radius: 12px;
+        .btn-download {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.85rem 1.5rem;
+            border-radius: 14px;
             transition: all 0.3s ease;
             box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
             font-family: 'Inter', sans-serif;
         }
-        .btn-download:hover { 
+        .btn-download:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(168, 85, 247, 0.5);
+            box-shadow: 0 6px 22px rgba(168, 85, 247, 0.5);
+        }
+        .btn-download:active { transform: translateY(0); }
+
+        /* Tablets and smaller */
+        @media (max-width: 480px) {
+            .message { padding: 2rem 1.25rem; border-radius: 20px; }
+            h2 { font-size: 1.25rem; }
         }
     </style>
 </head>
@@ -112,9 +145,15 @@
     <div class="ambient-glow"></div>
     <div class="container">
         <div class="message">
+            <span class="icon">📥</span>
             <h2>Preparing Download</h2>
-            <p>Your download for <br><span class="filename">{{ file_name }}</span><br> should start automatically.</p>
-            <a class="btn-download" href="{{ src|safe }}" download="{{ file_name }}">Click Here Manually</a>
+            <p>Your download for<br><span class="filename">{{ file_name }}</span><br>should start automatically.</p>
+            <a class="btn-download" href="{{ src|safe }}" download="{{ file_name }}">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
+                </svg>
+                Click Here If Not Started
+            </a>
         </div>
     </div>
 </body>

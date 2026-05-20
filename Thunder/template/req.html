@@ -71,11 +71,11 @@
             border: 1px solid var(--glass-border);
             border-top-color: var(--glass-highlight);
             border-radius: 24px;
-            padding: 32px;
+            padding: clamp(20px, 5vw, 32px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 28px;
+            gap: clamp(16px, 4vw, 28px);
             box-shadow: 
                 0 30px 60px -15px rgba(0, 0, 0, 0.5),
                 0 0 50px -10px var(--ember-glow),
@@ -94,8 +94,8 @@
         /* Vinyl Record styling */
         .vinyl-container {
             position: relative;
-            width: 220px;
-            height: 220px;
+            width: clamp(160px, 45vw, 220px);
+            height: clamp(160px, 45vw, 220px);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -112,8 +112,8 @@
 
         .vinyl-record {
             position: relative;
-            width: 200px;
-            height: 200px;
+            width: clamp(140px, 40vw, 200px);
+            height: clamp(140px, 40vw, 200px);
             background: radial-gradient(circle, #222 0%, #111 40%, #050505 100%);
             border-radius: 50%;
             box-shadow: 
@@ -199,6 +199,18 @@
         @keyframes spin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
+        }
+
+        /* ── Responsive ───────────────────────────── */
+        @media (max-width: 480px) {
+            .audio-card { border-radius: 18px; }
+            .vinyl-center { width: 48px; height: 48px; }
+            .vinyl-dot { width: 10px; height: 10px; }
+        }
+
+        /* Hide desktop keyboard hints on mobile */
+        @media (max-width: 600px) {
+            .keyboard-hints { display: none !important; }
         }
     </style>
 </head>
