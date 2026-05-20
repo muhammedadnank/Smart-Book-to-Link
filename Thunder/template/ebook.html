@@ -489,6 +489,37 @@
     const FILE_NAME = "{{ file_name }}";
     const FILE_TYPE = "{{ file_type }}";   // "epub" or "pdf"
 
+    /* ── Progress Fetch Utility ───────────────────── */
+    async function fetchWithProgress(url, onProgress) {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get('Content-Length');
+        
+        let receivedLength = 0;
+        let chunks = [];
+        while(true) {
+            const {done, value} = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            receivedLength += value.length;
+            if (contentLength) {
+                const pct = Math.round((receivedLength / contentLength) * 100);
+                onProgress(pct, receivedLength);
+            } else {
+                onProgress(null, receivedLength);
+            }
+        }
+        
+        let chunksAll = new Uint8Array(receivedLength);
+        let position = 0;
+        for(let chunk of chunks) {
+            chunksAll.set(chunk, position);
+            position += chunk.length;
+        }
+        return chunksAll.buffer;
+    }
+
     /* ── DOM refs ─────────────────────────────────── */
     const sidebar        = document.getElementById('sidebar');
     const tocList        = document.getElementById('toc-list');
@@ -579,7 +610,7 @@
     /* ─────────────────────────────────────────────── */
     /*  EPUB LOADING                                   */
     /* ─────────────────────────────────────────────── */
-    function loadEpub() {
+    async function loadEpub() {
         if (typeof ePub === 'undefined') {
             showError('EPUB.js library failed to load. Please download the file instead.');
             return;
@@ -587,68 +618,81 @@
 
         pdfViewer.style.display = 'none';
 
-        const book = ePub(FILE_URL);
-        const rendition = book.renderTo('epub-viewer', {
-            width: '100%',
-            height: '100%',
-            spread: 'none',
-            flow: 'paginated'
-        });
-        epubRendition = rendition;
+        try {
+            const bookData = await fetchWithProgress(FILE_URL, (pct, loaded) => {
+                if (pct !== null) {
+                    loading.querySelector('.loading-text').textContent = `Downloading EPUB: ${pct}%…`;
+                } else {
+                    loading.querySelector('.loading-text').textContent = `Downloading EPUB… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
+                }
+            });
 
-        rendition.display();
-        applyTheme(currentTheme);
-        rendition.themes.fontSize(currentFontSize + '%');
+            loading.querySelector('.loading-text').textContent = 'Opening EPUB…';
+            const book = ePub(bookData);
+            const rendition = book.renderTo('epub-viewer', {
+                width: '100%',
+                height: '100%',
+                spread: 'none',
+                flow: 'paginated'
+            });
+            epubRendition = rendition;
 
-        book.ready.then(() => {
-            loading.classList.add('hidden');
-            progressWrap.style.display = 'flex';
+            rendition.display();
+            applyTheme(currentTheme);
+            rendition.themes.fontSize(currentFontSize + '%');
 
-            // Navigation
-            prevBtn.addEventListener('click', () => rendition.prev());
-            nextBtn.addEventListener('click', () => rendition.next());
+            book.ready.then(() => {
+                loading.classList.add('hidden');
+                progressWrap.style.display = 'flex';
 
-            // TOC
-            return book.loaded.navigation;
-        }).then(nav => {
-            tocList.innerHTML = '';
-            if (!nav || !nav.toc || nav.toc.length === 0) {
-                tocList.innerHTML = '<li class="toc-item"><a href="#" style="font-style:italic">No contents</a></li>';
-                return;
-            }
-            function renderToc(items, level) {
-                items.forEach(item => {
-                    const li = document.createElement('li');
-                    li.className = 'toc-item' + (level > 0 ? ' sub' : '');
-                    const a = document.createElement('a');
-                    a.href = '#';
-                    a.textContent = item.label.trim();
-                    a.addEventListener('click', e => {
-                        e.preventDefault();
-                        rendition.display(item.href);
-                        tocList.querySelectorAll('a').forEach(x => x.classList.remove('active'));
-                        a.classList.add('active');
+                // Navigation
+                prevBtn.addEventListener('click', () => rendition.prev());
+                nextBtn.addEventListener('click', () => rendition.next());
+
+                // TOC
+                return book.loaded.navigation;
+            }).then(nav => {
+                tocList.innerHTML = '';
+                if (!nav || !nav.toc || nav.toc.length === 0) {
+                    tocList.innerHTML = '<li class="toc-item"><a href="#" style="font-style:italic">No contents</a></li>';
+                    return;
+                }
+                function renderToc(items, level) {
+                    items.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'toc-item' + (level > 0 ? ' sub' : '');
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.textContent = item.label.trim();
+                        a.addEventListener('click', e => {
+                            e.preventDefault();
+                            rendition.display(item.href);
+                            tocList.querySelectorAll('a').forEach(x => x.classList.remove('active'));
+                            a.classList.add('active');
+                        });
+                        li.appendChild(a);
+                        tocList.appendChild(li);
+                        if (item.subitems && item.subitems.length) renderToc(item.subitems, level + 1);
                     });
-                    li.appendChild(a);
-                    tocList.appendChild(li);
-                    if (item.subitems && item.subitems.length) renderToc(item.subitems, level + 1);
-                });
-            }
-            renderToc(nav.toc, 0);
-        }).catch(err => {
-            showError('Could not load EPUB: ' + err.message);
-        });
+                }
+                renderToc(nav.toc, 0);
+            }).catch(err => {
+                showError('Could not load EPUB: ' + err.message);
+            });
 
-        // Progress tracking
-        rendition.on('relocated', location => {
-            const pct = Math.round((location.start.percentage || 0) * 100);
-            progressBar.style.width = pct + '%';
-            progressText.textContent = pct + '%';
-        });
+            // Progress tracking
+            rendition.on('relocated', location => {
+                const pct = Math.round((location.start.percentage || 0) * 100);
+                progressBar.style.width = pct + '%';
+                progressText.textContent = pct + '%';
+            });
 
-        book.on('openFailed', err => {
-            showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));
-        });
+            book.on('openFailed', err => {
+                showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));
+            });
+        } catch (err) {
+            showError('Could not download EPUB file: ' + err.message);
+        }
     }
 
     /* ─────────────────────────────────────────────── */
@@ -671,7 +715,17 @@
             const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
 
-            const loadingTask = pdfjsLib.getDocument({ url: FILE_URL, withCredentials: false });
+            const pdfData = await fetchWithProgress(FILE_URL, (pct, loaded) => {
+                if (pct !== null) {
+                    loading.querySelector('.loading-text').textContent = `Downloading PDF: ${pct}%…`;
+                } else {
+                    loading.querySelector('.loading-text').textContent = `Downloading PDF… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
+                }
+            });
+
+            loading.querySelector('.loading-text').textContent = 'Opening PDF…';
+
+            const loadingTask = pdfjsLib.getDocument({ data: pdfData });
             const pdf = await loadingTask.promise;
 
             loading.classList.add('hidden');
@@ -760,8 +814,16 @@
         });
 
         try {
-            const response = await fetch(FILE_URL);
-            const arrayBuffer = await response.arrayBuffer();
+            const arrayBuffer = await fetchWithProgress(FILE_URL, (pct, loaded) => {
+                if (pct !== null) {
+                    loading.querySelector('.loading-text').textContent = `Downloading Comic: ${pct}%…`;
+                } else {
+                    loading.querySelector('.loading-text').textContent = `Downloading Comic… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
+                }
+            });
+
+            loading.querySelector('.loading-text').textContent = 'Opening Comic…';
+
             const zip = await JSZip.loadAsync(arrayBuffer);
 
             // Find all image files
