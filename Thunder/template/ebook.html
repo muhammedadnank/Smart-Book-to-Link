@@ -678,10 +678,12 @@
             progressWrap.style.display = 'flex';
 
             const totalPages = pdf.numPages;
-            let renderedPages = 0;
+            let currentPdfPage = 1;
 
-            // Render pages sequentially for memory efficiency
-            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            async function renderPdfPage(pageNum) {
+                pdfViewer.innerHTML = '';
+                pdfViewer.scrollTop = 0;
+
                 const page = await pdf.getPage(pageNum);
                 const viewport = page.getViewport({ scale: 1.6 });
 
@@ -701,31 +703,41 @@
                     viewport
                 }).promise;
 
-                renderedPages++;
-                const pct = Math.round((renderedPages / totalPages) * 100);
+                const pct = Math.round((pageNum / totalPages) * 100);
                 progressBar.style.width  = pct + '%';
                 progressText.textContent = `${pageNum} / ${totalPages}`;
             }
 
-            // PDF nav: scroll to page
+            // Render first page initially
+            await renderPdfPage(currentPdfPage);
+
+            // PDF nav: switch page
             prevBtn.addEventListener('click', () => {
-                pdfViewer.scrollBy({ top: -window.innerHeight * 0.8, behavior: 'smooth' });
+                if (currentPdfPage > 1) {
+                    currentPdfPage--;
+                    renderPdfPage(currentPdfPage);
+                }
             });
             nextBtn.addEventListener('click', () => {
-                pdfViewer.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+                if (currentPdfPage < totalPages) {
+                    currentPdfPage++;
+                    renderPdfPage(currentPdfPage);
+                }
             });
-
         } catch (err) {
             showError('Could not render PDF: ' + (err && err.message ? err.message : 'Unknown error') + '. Try downloading the file.');
         }
     }
 
-    /* ─────────────────────────────────────────────── */
-    /*  KEYBOARD NAVIGATION                            */
-    /* ─────────────────────────────────────────────── */
+    /* ── Keyboard navigation ──────────────────────── */
     document.addEventListener('keydown', e => {
-        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
+        if (FILE_TYPE === 'epub') {
+            if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
+        } else {
+            if (e.key === 'ArrowLeft')  prevBtn.click();
+            if (e.key === 'ArrowRight') nextBtn.click();
+        }
         if (e.key === 't' || e.key === 'T') sidebar.classList.toggle('hidden');
     });
 
@@ -773,11 +785,13 @@
             progressWrap.style.display = 'flex';
 
             const totalPages = imageFiles.length;
-            let renderedPages = 0;
+            let currentComicPage = 1;
 
-            // Unpack and render images sequentially
-            for (let i = 0; i < totalPages; i++) {
-                const file = imageFiles[i];
+            async function renderComicPage(pageNum) {
+                pdfViewer.innerHTML = '';
+                pdfViewer.scrollTop = 0;
+
+                const file = imageFiles[pageNum - 1];
                 const base64Data = await file.async("base64");
                 const mimeType = file.name.endsWith('.png') ? 'image/png' : 'image/jpeg';
 
@@ -793,18 +807,26 @@
                 wrap.appendChild(img);
                 pdfViewer.appendChild(wrap);
 
-                renderedPages++;
-                const pct = Math.round((renderedPages / totalPages) * 100);
+                const pct = Math.round((pageNum / totalPages) * 100);
                 progressBar.style.width = pct + '%';
-                progressText.textContent = `${i + 1} / ${totalPages}`;
+                progressText.textContent = `${pageNum} / ${totalPages}`;
             }
 
-            // Comic nav: scroll to page
+            // Render first page initially
+            await renderComicPage(currentComicPage);
+
+            // Comic nav: switch page
             prevBtn.addEventListener('click', () => {
-                pdfViewer.scrollBy({ top: -window.innerHeight * 0.8, behavior: 'smooth' });
+                if (currentComicPage > 1) {
+                    currentComicPage--;
+                    renderComicPage(currentComicPage);
+                }
             });
             nextBtn.addEventListener('click', () => {
-                pdfViewer.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
+                if (currentComicPage < totalPages) {
+                    currentComicPage++;
+                    renderComicPage(currentComicPage);
+                }
             });
 
         } catch (err) {
