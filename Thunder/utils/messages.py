@@ -32,7 +32,7 @@ MSG_DEAUTHORIZE_FAILED = (
 MSG_TOKEN_FAILED = (
     "⚠️ **Token Activation Failed!**\n\n"
     "> ❗ Reason: {reason}\n\n"
-    "🔑 Please check your token or contact support."
+    "🔑 Please check your token or contact support. (ID: {error_id})"
 )
 MSG_SHELL_ERROR = """**❌ Shell Command Error ❌**
 <pre>{error}</pre>"""
