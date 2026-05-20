@@ -252,7 +252,17 @@ async def _serve_media_response(
 
 @routes.get("/", allow_head=True)
 async def root_redirect(request):
-    raise web.HTTPFound("https://github.com/fyaz05/FileToLink")
+    from Thunder.utils.render_template import template_env
+    template = template_env.get_template('home.html')
+    rendered_home = await template.render_async(bot_username=StreamBot.username)
+    return web.Response(
+        text=rendered_home,
+        content_type='text/html',
+        headers={
+            "Access-Control-Allow-Origin": "*",
+            "X-Content-Type-Options": "nosniff"
+        }
+    )
 
 
 @routes.get("/status", allow_head=True)

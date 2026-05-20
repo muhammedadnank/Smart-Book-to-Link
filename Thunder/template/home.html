@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Book to Link - Stream eBooks & Audiobooks</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121e;
+            --accent-glow: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%);
+            --accent-purple: #a855f7;
+            --accent-blue: #6366f1;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --glass-bg: rgba(18, 18, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-highlight: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .brand {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Ambient Glow Backgrounds */
+        .ambient-glow {
+            position: absolute;
+            width: 800px;
+            height: 800px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .glow-1 {
+            top: -200px;
+            right: -200px;
+        }
+
+        .glow-2 {
+            bottom: -200px;
+            left: -200px;
+        }
+
+        /* Navigation Bar */
+        nav {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(10, 10, 15, 0.8);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .brand i {
+            color: var(--accent-purple);
+            -webkit-text-fill-color: initial;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--glass-highlight);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 6rem 2rem;
+            text-align: center;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-badge {
+            background: rgba(168, 85, 247, 0.1);
+            border: 1px solid rgba(168, 85, 247, 0.2);
+            color: #d8b4fe;
+            padding: 0.5rem 1.2rem;
+            border-radius: 100px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 2rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -2px;
+            margin-bottom: 1.5rem;
+            max-width: 900px;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #6ee7b7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 650px;
+            margin-bottom: 3rem;
+        }
+
+        .cta-group {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        /* Features Section */
+        .features {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            z-index: 10;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 3rem;
+            letter-spacing: -1px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(168, 85, 247, 0.3);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--accent-blue);
+        }
+
+        .feature-card:nth-child(2) .card-icon {
+            background: rgba(168, 85, 247, 0.1);
+            color: var(--accent-purple);
+        }
+
+        .feature-card:nth-child(3) .card-icon {
+            background: rgba(110, 231, 183, 0.1);
+            color: #6ee7b7;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-desc {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Supported Formats Table */
+        .formats-section {
+            max-width: 1000px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+            z-index: 10;
+        }
+
+        .formats-table {
+            width: 100%;
+            border-collapse: collapse;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .formats-table th, .formats-table td {
+            padding: 1.2rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .formats-table th {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .formats-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            padding: 0.2rem 0.6rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-family: monospace;
+            color: #d1d5db;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--glass-border);
+            padding: 2rem;
+            text-align: center;
+            background: #06060a;
+            z-index: 10;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: var(--accent-purple);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        footer a:hover {
+            color: var(--accent-blue);
+        }
+
+        /* Responsive Layouts */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2.75rem;
+                letter-spacing: -1px;
+            }
+
+            .hero {
+                padding: 4rem 1rem;
+            }
+
+            .cta-group {
+                flex-direction: column;
+                width: 100%;
+                max-width: 320px;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="brand">
+                <i class="fa-solid fa-book-open-reader"></i> Smart Book to Link
+            </div>
+            <div class="nav-links">
+                <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank" class="nav-btn btn-secondary">
+                    <i class="fa-brands fa-github"></i> GitHub
+                </a>
+                <a href="https://t.me/{{ bot_username }}" target="_blank" class="nav-btn btn-primary">
+                    <i class="fa-brands fa-telegram"></i> Launch Bot
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <section class="hero">
+            <div class="hero-badge">
+                <i class="fa-solid fa-bolt"></i> High-Speed Literature Streamer
+            </div>
+            <h1 class="hero-title">
+                Stream Your Books & Audiobooks <span class="gradient-text">Instantly</span>
+            </h1>
+            <p class="hero-subtitle">
+                The ultimate premium Telegram bot designed exclusively for literature lovers. Convert eBooks, audiobooks, documents, and archives into blazing-fast streamable and downloadable web links.
+            </p>
+            <div class="cta-group">
+                <a href="https://t.me/{{ bot_username }}" target="_blank" class="nav-btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: 16px;">
+                    <i class="fa-brands fa-telegram"></i> Get Started on Telegram
+                </a>
+                <a href="#how-it-works" class="nav-btn btn-secondary" style="padding: 1rem 2rem; font-size: 1.1rem; border-radius: 16px;">
+                    Learn More
+                </a>
+            </div>
+        </section>
+
+        <section class="features" id="how-it-works">
+            <h2 class="section-title">✨ Premium Advanced Features</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <h3 class="card-title">Ultimate Ebook Reader</h3>
+                    <p class="card-desc">
+                        Enjoy paginated EPUBs, hardware-accelerated PDF canvas views, and a client-side cbz/cbr comic strip reader directly in your browser.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fa-solid fa-headphones"></i>
+                    </div>
+                    <h3 class="card-title">Atmospheric Audio Streamer</h3>
+                    <p class="card-desc">
+                        Listen to high-fidelity audiobooks with metadata processing, real-time duration updates, and fully responsive playback controls.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="card-icon">
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                    <h3 class="card-title">Blazing-Fast Speed</h3>
+                    <p class="card-desc">
+                        Experience ultra-high-speed download and streaming links that bypass typical Telegram API bottlenecks.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="formats-section">
+            <h2 class="section-title">📊 Supported File Formats</h2>
+            <table class="formats-table">
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Allowed Formats</th>
+                        <th>Web Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>📚 eBooks & Comics</strong></td>
+                        <td>
+                            <span class="badge">.epub</span>
+                            <span class="badge">.pdf</span>
+                            <span class="badge">.mobi</span>
+                            <span class="badge">.cbz</span>
+                            <span class="badge">.cbr</span>
+                        </td>
+                        <td>Opens in custom web reader</td>
+                    </tr>
+                    <tr>
+                        <td><strong>🎧 Audiobooks</strong></td>
+                        <td>
+                            <span class="badge">.mp3</span>
+                            <span class="badge">.m4b</span>
+                            <span class="badge">.m4a</span>
+                            <span class="badge">.opus</span>
+                        </td>
+                        <td>Streams in atmospheric web player</td>
+                    </tr>
+                    <tr>
+                        <td><strong>📄 Documents</strong></td>
+                        <td>
+                            <span class="badge">.docx</span>
+                            <span class="badge">.txt</span>
+                            <span class="badge">.rtf</span>
+                        </td>
+                        <td>Direct preview / Download card</td>
+                    </tr>
+                    <tr>
+                        <td><strong>📦 Archives</strong></td>
+                        <td>
+                            <span class="badge">.zip</span>
+                            <span class="badge">.rar</span>
+                            <span class="badge">.7z</span>
+                        </td>
+                        <td>Direct secure download</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2026 Smart Book to Link. Powered by <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank">Smart Book to Link</a>.</p>
+    </footer>
+</body>
+</html>
