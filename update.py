@@ -2,7 +2,7 @@ import os
 from os import path as opath, getenv, rename
 from subprocess import run as srun
 from dotenv import load_dotenv
-from Thunder.utils.logger import logger
+from PageStream.utils.logger import logger
 
 load_dotenv('config.env', override=True)
 
