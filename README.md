@@ -158,6 +158,7 @@ Copy `config_sample.env` to `config.env` and customize the variables.
 #### 🚀 Render Deployment (One-Click)
 
 1. Click the button below:
+
    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
 2. Fill in the required environment variables:
    * `API_ID`, `API_HASH`, `BOT_TOKEN`, `OWNER_ID`, `BIN_CHANNEL`, and `DATABASE_URL`.
