@@ -419,6 +419,13 @@
         <button class="toolbar-btn" id="btn-theme-sepia" title="Sepia theme">📜</button>
         <button class="toolbar-btn active" id="btn-theme-dark" title="Dark theme">🌙</button>
 
+        <div class="toolbar-divider" id="fit-divider" style="display:none"></div>
+        <button class="toolbar-btn" id="btn-fit-mode" title="Toggle Fit Page / Fit Width" style="display:none">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" id="fit-icon-page"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6z"/></svg>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" id="fit-icon-width" style="display:none"><path d="M2 4h20v2H2V4zm0 14h20v2H2v-2zm2-8h16v4H4v-4z"/></svg>
+            <span id="fit-text">Fit Page</span>
+        </button>
+
         <div class="toolbar-divider"></div>
 
         <a class="toolbar-btn" href="{{ src|safe }}" download="{{ file_name }}" title="Download file">
@@ -535,6 +542,31 @@
     document.getElementById('btn-theme-sepia').addEventListener('click', () => applyEpubTheme('sepia'));
     document.getElementById('btn-theme-dark').addEventListener('click',  () => applyEpubTheme('dark'));
 
+    let pdfFitMode = 'page';
+    document.getElementById('btn-fit-mode').addEventListener('click', () => {
+        pdfFitMode = pdfFitMode === 'page' ? 'width' : 'page';
+        
+        const iconPage = document.getElementById('fit-icon-page');
+        const iconWidth = document.getElementById('fit-icon-width');
+        const text = document.getElementById('fit-text');
+        
+        if (pdfFitMode === 'page') {
+            iconPage.style.display = 'inline-block';
+            iconWidth.style.display = 'none';
+            text.textContent = 'Fit Page';
+        } else {
+            iconPage.style.display = 'none';
+            iconWidth.style.display = 'inline-block';
+            text.textContent = 'Fit Width';
+        }
+
+        if (FILE_TYPE === 'pdf' && pdfDoc) {
+            renderPdfPage(pdfPageNum);
+        } else if (FILE_TYPE === 'comic' && comicPages.length > 0) {
+            renderComicPage(comicPageNum);
+        }
+    });
+
     function updateFontSize() {
         fontSizeVal.textContent = currentFontSize + '%';
         if (!epubRendition) return;
@@ -594,6 +626,8 @@
             showError('EPUB.js library failed to load. Please download the file instead.');
             return;
         }
+        document.getElementById('fit-divider').style.display = 'none';
+        document.getElementById('btn-fit-mode').style.display = 'none';
         pdfViewer.style.display = 'none';
         epubViewer.style.display = 'block';
 
@@ -692,6 +726,8 @@
         pdfViewer.style.display     = 'flex';
         pdfViewer.style.justifyContent = 'center';
         pdfViewer.style.alignItems = 'center';
+        document.getElementById('fit-divider').style.display = 'block';
+        document.getElementById('btn-fit-mode').style.display = 'flex';
 
         try {
             const loadingText = document.querySelector('#loading .loading-text');
@@ -750,11 +786,28 @@
         pdfRendering = true;
         pdfViewer.innerHTML = '';
 
+        if (pdfFitMode === 'page') {
+            pdfViewer.style.overflowY = 'hidden';
+            pdfViewer.style.justifyContent = 'center';
+        } else {
+            pdfViewer.style.overflowY = 'auto';
+            pdfViewer.style.justifyContent = 'flex-start';
+        }
+
         try {
             const page = await pdfDoc.getPage(num);
             const wrapperWidth = pdfViewer.clientWidth - 32;
+            const wrapperHeight = pdfViewer.clientHeight - 32;
             const unscaledViewport = page.getViewport({ scale: 1 });
-            const scale = Math.min(1.8, wrapperWidth / unscaledViewport.width);
+            
+            let scale;
+            if (pdfFitMode === 'page') {
+                const scaleX = wrapperWidth / unscaledViewport.width;
+                const scaleY = wrapperHeight / unscaledViewport.height;
+                scale = Math.min(scaleX, scaleY);
+            } else {
+                scale = wrapperWidth / unscaledViewport.width;
+            }
             
             const viewport = page.getViewport({ scale: scale });
             const canvas   = document.createElement('canvas');
@@ -801,6 +854,8 @@
         pdfViewer.style.display     = 'flex';
         pdfViewer.style.justifyContent = 'center';
         pdfViewer.style.alignItems = 'center';
+        document.getElementById('fit-divider').style.display = 'block';
+        document.getElementById('btn-fit-mode').style.display = 'flex';
 
         try {
             const loadingText = document.querySelector('#loading .loading-text');
@@ -866,6 +921,14 @@
 
     async function renderComicPage(index) {
         pdfViewer.innerHTML = '';
+        if (pdfFitMode === 'page') {
+            pdfViewer.style.overflowY = 'hidden';
+            pdfViewer.style.justifyContent = 'center';
+        } else {
+            pdfViewer.style.overflowY = 'auto';
+            pdfViewer.style.justifyContent = 'flex-start';
+        }
+
         try {
             const entry = comicPages[index];
             const base64 = await entry.async('base64');
@@ -873,11 +936,25 @@
 
             const img = document.createElement('img');
             img.src   = `data:${mimeType};base64,${base64}`;
-            img.style.cssText = 'width:100%;height:auto;display:block;max-height:85vh;object-fit:contain;';
+
+            if (pdfFitMode === 'page') {
+                img.style.cssText = 'max-width:100%;max-height:calc(100vh - var(--toolbar-h) - 64px);width:auto;height:auto;display:block;object-fit:contain;';
+            } else {
+                img.style.cssText = 'width:100%;height:auto;display:block;';
+            }
 
             const wrap = document.createElement('div');
             wrap.className     = 'pdf-page-wrap';
-            wrap.style.maxWidth = '800px';
+            if (pdfFitMode === 'page') {
+                wrap.style.maxWidth = '100%';
+                wrap.style.maxHeight = 'calc(100vh - var(--toolbar-h) - 64px)';
+                wrap.style.background = 'transparent';
+                wrap.style.boxShadow = 'none';
+            } else {
+                wrap.style.maxWidth = '800px';
+                wrap.style.background = 'white';
+                wrap.style.boxShadow = '0 4px 32px rgba(0,0,0,0.5)';
+            }
             wrap.appendChild(img);
             pdfViewer.appendChild(wrap);
 
@@ -891,6 +968,8 @@
 
     /* ── Offline / unsupported ────────────────────── */
     function loadOfflineMessage(customMsg) {
+        document.getElementById('fit-divider').style.display = 'none';
+        document.getElementById('btn-fit-mode').style.display = 'none';
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'none';
@@ -922,6 +1001,19 @@
         if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
         if (e.key === 't' || e.key === 'T') sidebar.classList.toggle('hidden');
+    });
+
+    /* ── Window resize ───────────────────────────── */
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (FILE_TYPE === 'pdf' && pdfDoc) {
+                renderPdfPage(pdfPageNum);
+            } else if (FILE_TYPE === 'comic' && comicPages.length > 0) {
+                renderComicPage(comicPageNum);
+            }
+        }, 150);
     });
 
     /* ── Dispatch ────────────────────────────────── */
