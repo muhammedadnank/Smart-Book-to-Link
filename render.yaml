@@ -1,7 +1,8 @@
 services:
   - type: web
     name: smart-book-to-link
-    env: python
+    # Change runtime to docker if you want to deploy using the Dockerfile
+    runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt
     startCommand: bash thunder.sh
@@ -28,10 +29,14 @@ services:
         sync: false
         description: "Render Web Service URL (e.g. your-app.onrender.com, without https://)"
       - key: PORT
-        value: 8080
+        value: "8080"
       - key: BIND_ADDRESS
-        value: 0.0.0.0
+        value: "0.0.0.0"
       - key: PING_INTERVAL
-        value: 840
+        value: "840"
       - key: NO_PORT
+        value: "True"
+      - key: HAS_SSL
+        value: "True"
+      - key: SET_COMMANDS
         value: "True"
