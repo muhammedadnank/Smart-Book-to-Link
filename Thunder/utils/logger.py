@@ -29,7 +29,7 @@ console_handler.stream.reconfigure(encoding='utf-8', errors='replace')
 listener = QueueListener(log_queue, file_handler, console_handler, respect_handler_level=True)
 listener.start()
 
-logger = logging.getLogger('ThunderBot')
+logger = logging.getLogger('PageStreamBot')
 logger.setLevel(logging.INFO)
 logger.propagate = False
 logger.addHandler(QueueHandler(log_queue))

@@ -33,7 +33,7 @@ class Var:
         logger.critical("Missing required Telegram API configuration")
         raise ValueError("Missing required Telegram API configuration")
 
-    NAME: str = os.getenv("NAME", "ThunderF2L")
+    NAME: str = os.getenv("NAME", "PageStreamF2L")
     SLEEP_THRESHOLD: int = int(os.getenv("SLEEP_THRESHOLD", "600"))
     WORKERS: int = int(os.getenv("WORKERS", "8"))
 

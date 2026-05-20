@@ -107,7 +107,7 @@ class ByteStreamer:
                 "sticker": "webp",
             }
             ext = ext_map.get(media_type, "bin")
-            file_name = f"Thunder_{message.id}.{ext}"
+            file_name = f"PageStream_{message.id}.{ext}"
 
         if not mime_type:
             mime_map = {

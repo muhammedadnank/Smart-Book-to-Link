@@ -87,7 +87,7 @@ def get_fname(msg: Message) -> str:
                     break
 
         timestamp = dt.now().strftime("%Y%m%d%H%M%S")
-        fname = f"Thunder File To Link_{timestamp}.{ext}"
+        fname = f"PageStream File To Link_{timestamp}.{ext}"
 
     return fname
 

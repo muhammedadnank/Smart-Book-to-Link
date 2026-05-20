@@ -26,8 +26,8 @@ else:
 
         git_commands = (
             f"git init -q && "
-            f"git config --global user.email thunder@update.local && "
-            f"git config --global user.name Thunder && "
+            f"git config --global user.email pagestream@update.local && "
+            f"git config --global user.name PageStream && "
             f"git add . && "
             f"git commit -sm update -q && "
             f"git remote add origin {UPSTREAM_REPO} && "
