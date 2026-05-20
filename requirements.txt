@@ -1,0 +1,10 @@
+aiohttp
+cloudscraper
+Jinja2
+pyrofork
+pymongo
+psutil
+python-dotenv
+speedtest-cli
+tgcrypto
+uvloop==0.21.0
