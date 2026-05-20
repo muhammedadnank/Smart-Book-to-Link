@@ -1,7 +1,10 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="130" style="border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,0.4)">
-  <h1 align="center">📄 PageStream</h1>
-  <p align="center"><i>High-Performance Telegram File-to-Link Bot with built-in eBook, Audiobook & Media Streaming</i></p>
+  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="120" style="border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.5)">
+</p>
+
+<h1 align="center">📄 PageStream</h1>
+<p align="center">
+  <i>A premium, high-performance Telegram File-to-Link bot equipped with interactive in-browser eBook readers, atmospheric audiobooks player, and direct media streaming.</i>
 </p>
 
 <p align="center">
@@ -14,148 +17,124 @@
 
 ---
 
-> [!NOTE]
-> **You are on the `main` branch — the stable reference build (`Smart-Book-to-Link-project`).**
-> This branch has been upgraded to the new PageStream package naming conventions.
-> For the actively developed, feature-rich version with batch processing, rate limiting, token auth, and optimized database, see the [`master` branch](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master).
+### 🌟 Key Features
+
+*   **📚 In-Browser eBook Reader**: Open and read `.pdf`, `.epub`, and `.cbz` files seamlessly inside your browser with customizable light/sepia/dark themes.
+*   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music, complete with interactive vinyl animations and responsive controls.
+*   **⚡ High Performance**: Powered by asynchronous Python (`aiohttp` + `pyrofork`), utilizing connection pooling, indexed database queries, and optimized buffers.
+*   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
+*   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
+*   **🔁 Batch Generation**: Generate up to N streaming links concurrently in a single command.
 
 ---
 
 ## 📑 Table of Contents
 
-- [About The Project](#about-the-project)
-- [Branch Overview](#branch-overview)
-- [How It Works](#how-it-works)
-- [Supported Formats](#supported-formats)
-- [Advanced Media Viewers](#advanced-media-viewers)
-- [Configuration](#configuration)
-  - [Essential Variables](#essential-variables)
-  - [Optional Variables](#optional-variables)
-- [Commands Reference](#commands-reference)
-- [Deployment Guide](#deployment-guide)
-  - [Render (One-Click)](#-render-one-click)
-  - [Docker](#-docker)
-  - [Manual / Virtualenv](#-manual--virtualenv)
-- [Tech Stack](#tech-stack)
-- [License](#license)
+1. [About The Project](#about-the-project)
+2. [How It Works](#how-it-works)
+3. [Supported Formats](#supported-formats)
+4. [Advanced Media Viewers](#advanced-media-viewers)
+5. [Configuration Guide](#configuration-guide)
+    * [Essential Variables](#essential-variables)
+    * [Optional Variables](#optional-variables)
+6. [Commands Reference](#commands-reference)
+7. [Deployment Guide](#deployment-guide)
+    * [Render (One-Click)](#-render-one-click)
+    * [Docker](#-docker)
+    * [Manual / Virtualenv](#-manual--virtualenv)
+8. [Tech Stack](#tech-stack)
+9. [License](#license)
 
 ---
 
 ## About The Project
 
-**PageStream** is a premium, specialized Telegram bot that transforms media files into high-speed HTTP(S) streaming and download links. It strictly accepts literary and archival content — eBooks, audiobooks, documents, and archives — and serves each through a purpose-built, responsive web viewer directly in the browser.
+**PageStream** is designed to transform Telegram document uploads into clean, high-speed HTTP(S) streamable links. It targets literary, document, and archival files, ensuring that your books, audiobooks, and documents are instantly readable or playable on any device without downloading external files or leaving the web environment.
 
 ### 💡 Ideal For
 
 | Audience | Use Case |
-|---|---|
-| 📖 E-Reading Buffs | Stream & read books directly in-browser, no app required |
-| 🎧 Audiobook Listeners | Full-featured audio player with atmospheric UI |
-| 📁 Resource Networks | Distribute course material, docs, and digital libraries |
-| 🚀 Power Users | Ultra-fast direct links bypassing Telegram client limits |
-
----
-
-## Branch Overview
-
-| Branch | Description | Status |
-|---|---|---|
-| [`main`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main) | **`Smart-Book-to-Link-project`** — stable build, fully renamed to `PageStream` | ✅ Stable |
-| [`master`](https://github.com/muhammedadnank/Smart-Book-to-Link/tree/master) | `claude v2` — optimized, feature-rich active build | 🚀 Active Dev |
-
-**Features in `main` / `master`:**
-- ✅ Full Python package rename: `Thunder/` → `PageStream/`
-- ⚡ Optimized async database with connection pooling and indexed queries
-- 🔁 Batch `/link N` command for bulk link generation
-- 🛡️ Per-user rate limiting (`RATE_LIMIT_ENABLED`)
-- 🔐 Time-limited access token system (`TOKEN_ENABLED`)
-- 📡 Keep-alive service for free-tier hosting platforms
-- 🎨 All UI messages and templates rebranded to PageStream
+| :--- | :--- |
+| **📖 E-Readers** | Read books & manga instantly in-browser on mobile or desktop |
+| **🎧 Audiobook Fans** | Listen to audio tracks with advanced playback speed and seek controls |
+| **📁 Libraries & Channels** | Distribute course resources, archives, and files with speed |
+| **🚀 Power Users** | Stream media files immediately, bypassing local client constraints |
 
 ---
 
 ## How It Works
 
 ```
-User sends file → Bot validates format → Forwards to BIN_CHANNEL → Returns stream/download link(s)
+User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Returns streaming / reader link
 ```
 
-1. **Format Validation** — The bot immediately checks the file extension. Unsupported formats are rejected with an informative formats card.
-2. **Secure Storage** — Accepted files are forwarded to your private `BIN_CHANNEL`, creating a persistent stream source.
-3. **Smart Routing** — When a link is accessed, the server detects the file type and serves the correct viewer (ebook reader, audio player, or download redirect).
+1.  **Format Validation**: Files are checked on-the-fly. Unsupported extensions are instantly rejected with clean visual cards.
+2.  **Persistent Storage**: Files are saved securely in your private Telegram `BIN_CHANNEL` which acts as the source host.
+3.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or direct download.
 
 ---
 
 ## Supported Formats
 
-> [!WARNING]
-> Only the formats listed below are accepted. Any other type (videos, executables, app packages, etc.) is rejected with user-friendly feedback.
+> [!IMPORTANT]
+> Non-supported files (executables, videos, app packages, etc.) are blocked automatically to preserve bandwidth and clean operations.
 
-| Category | Extensions | Viewer / Action |
+| Category | File Extensions | Associated Action / Viewer |
 | :--- | :--- | :--- |
-| **📚 eBooks** | `.pdf` `.epub` `.mobi` `.azw` `.azw3` `.djvu` `.fb2` `.lit` `.cbr` `.cbz` | Advanced **Ebook & Comic Reader** |
-| **🎧 Audiobooks** | `.mp3` `.m4b` `.m4a` `.ogg` `.flac` `.aac` `.wav` `.opus` | Atmospheric **Audio Player** |
-| **📄 Documents** | `.doc` `.docx` `.txt` `.rtf` `.odt` | Preview card + direct download |
-| **📦 Archives** | `.zip` `.rar` `.7z` `.tar` `.gz` | Direct download redirect only |
+| **📚 eBooks** | `.pdf` `.epub` `.mobi` `.azw` `.azw3` `.djvu` `.fb2` `.lit` `.cbr` `.cbz` | **Interactive eBook / Comic Reader** |
+| **🎧 Audiobooks** | `.mp3` `.m4b` `.m4a` `.ogg` `.flac` `.aac` `.wav` `.opus` | **Atmospheric Audio Player** |
+| **📄 Documents** | `.doc` `.docx` `.txt` `.rtf` `.odt` | Document preview card + download |
+| **📦 Archives** | `.zip` `.rar` `.7z` `.tar` `.gz` | Direct download redirection |
 
 ---
 
 ## Advanced Media Viewers
 
-### 📖 Ebook & Comic Reader (`ebook.html`)
-
-Adapts dynamically per format:
-
-| Format | Engine | Features |
-|---|---|---|
-| `.epub` | `EPUB.js` | Paginated text, light/dark/sepia themes, font size control, ToC navigation, keyboard turns |
-| `.pdf` | `PDF.js` | Hardware-accelerated canvas grid, sequential page rendering |
-| `.cbz` | `JSZip` (CDN) | Client-side extraction, alphabetical page sort, scroll reader |
-| `.mobi` / `.azw` | — | Professional download handshake card with e-reader setup guide |
+### 📖 eBook & Comic Reader (`ebook.html`)
+*   **EPUBs**: Powered by `EPUB.js` featuring paginated text flow, Table of Contents navigation, font size adjustment, and light/dark/sepia styling.
+*   **PDFs**: Uses `PDF.js` rendering with hardware-accelerated canvas grids for crisp rendering.
+*   **CBZ Comics**: Uses client-side `JSZip` to extract pages on-the-fly, sort them alphabetically, and view as a continuous web-comic stream.
 
 ### 🎧 Atmospheric Audio Player (`req.html`)
-
-- Full playback controls with seek bar and duration display
-- Responsive layout — desktop & mobile optimized
-- Atmospheric animated vinyl backdrop that reacts to player state
-- Metadata display (filename, format, file size)
-- External player support: VLC, MX Player, Infuse, MPV, and more
+*   Fully responsive audio control card featuring play, pause, seek, mute, volume, and playback speed adjustments.
+*   Vinyl records animation that spins only when audio is actively playing.
+*   "Open In" Drawer supporting external media applications like **VLC**, **MX Player**, **Infuse**, **PotPlayer**, and **MPV** on Android, iOS, and desktop environments.
 
 ---
 
-## Configuration
+## Configuration Guide
 
-Copy `config_sample.env` → `config.env` and fill in your values.
+Rename `config_sample.env` to `config.env` and fill in the parameters:
 
 ### Essential Variables
 
 | Variable | Description | Example |
 | :--- | :--- | :--- |
 | `API_ID` | Telegram API ID from [my.telegram.org](https://my.telegram.org) | `12345678` |
-| `API_HASH` | Telegram API Hash | `abc123def456` |
-| `BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) | `123456:ABCdef` |
-| `BIN_CHANNEL` | Private channel ID for file storage | `-1001234567890` |
-| `OWNER_ID` | Your Telegram user ID | `12345678` |
-| `DATABASE_URL` | MongoDB Atlas connection string | `mongodb+srv://...` |
-| `FQDN` | Your server domain or IP | `reader.yoursite.com` |
-| `PORT` | Web server port | `8080` |
+| `API_HASH` | Telegram API Hash from [my.telegram.org](https://my.telegram.org) | `abc123def456` |
+| `BOT_TOKEN` | Bot token from [@BotFather](https://t.me/BotFather) | `12345:AbCdEf...` |
+| `BIN_CHANNEL` | Private storage channel ID (must start with `-100`) | `-1001234567890` |
+| `OWNER_ID` | Telegram User ID of the primary admin | `987654321` |
+| `DATABASE_URL` | MongoDB Atlas database connection string | `mongodb+srv://...` |
+| `FQDN` | Host name of your deployment (no `https://` prefix) | `pagestream.onrender.com` |
+| `PORT` | Local network port to bind the server | `8080` |
 
 ### Optional Variables
 
 <details>
-<summary>▶ View optional configuration</summary>
+<summary>⚙️ View Optional Variables</summary>
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `NAME` | Bot application name shown in logs | `PageStreamF2L` |
-| `MULTI_TOKEN1` | Extra bot token for load balancing | *(empty)* |
-| `MULTI_TOKEN2` | Second extra bot token | *(empty)* |
-| `FORCE_CHANNEL_ID` | Channel users must join before using the bot | *(empty)* |
-| `RATE_LIMIT_ENABLED` | Enable per-user anti-spam rate limiting | `False` |
-| `TOKEN_ENABLED` | Enable time-limited access tokens | `False` |
-| `TOKEN_TTL_HOURS` | Token validity in hours | `24` |
-| `SLEEP_THRESHOLD` | FloodWait sleep threshold in seconds | `600` |
-| `WORKERS` | Number of async worker threads | `8` |
+| `NAME` | Application name identifier | `PageStreamF2L` |
+| `FORCE_CHANNEL_ID` | Requires users to join this channel before getting links | *(empty)* |
+| `RATE_LIMIT_ENABLED` | Limits user requests per minute to prevent spam | `False` |
+| `TOKEN_ENABLED` | Restricts access to links using timed user tokens | `False` |
+| `TOKEN_TTL_HOURS` | Duration in hours before a token expires | `24` |
+| `SLEEP_THRESHOLD` | Flood wait threshold in seconds | `600` |
+| `WORKERS` | Max asynchronous event loop worker threads | `8` |
+| `MULTI_TOKEN1` | Additional bot token to scale request handling | *(empty)* |
+| `MULTI_TOKEN2` | Second auxiliary token to scale request handling | *(empty)* |
 
 </details>
 
@@ -165,27 +144,23 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 
 ### 👤 User Commands
 
-| Command | Description |
-|---|---|
-| `/start` | Start the bot, view welcome message, or activate a time token |
-| `/link [N]` | Generate link(s). Reply to the first file and pass count for batch mode, e.g. `/link 5` |
-| `/ping` | Check bot response latency |
-| `/help` | Show usage guide and accepted formats |
-| `/about` | View bot info, features, and version |
-| `/dc` | Inspect Telegram Data Center info for a file or user |
+*   `/start` — Initialize the bot, view welcome greeting, or validate token.
+*   `/link [N]` — Generate link(s). Reply to a file with `/link` (or `/link 5` for next 5 files).
+*   `/help` — Display list of supported formats and usage guidelines.
+*   `/ping` — Measure bot interaction latency.
+*   `/about` — View info, version, and developer details.
+*   `/dc` — Query the Telegram datacenter hosting a specific file.
 
 ### 🔧 Admin Commands
 
-| Command | Description |
-|---|---|
-| `/status` | Server health — CPU, RAM, uptime |
-| `/stats` | Database analytics — total users, total links |
-| `/ban` / `/unban` | Block / unblock a user |
-| `/authorize` / `/deauthorize` | Grant / revoke permanent access |
-| `/broadcast` | Send a message to all users |
-| `/log` | Fetch the latest server execution log |
-| `/restart` | Restart the bot process |
-| `/speedtest` | Run a server speed test |
+*   `/status` — Show system stats (CPU, memory load, network, uptime).
+*   `/stats` — View total database metrics (total users, total links).
+*   `/ban` / `/unban` — Block or unblock users from accessing services.
+*   `/authorize` / `/deauthorize` — Manage permanent access for users.
+*   `/broadcast` — Send an announcement message to all bot users.
+*   `/log` — View and fetch execution logs.
+*   `/restart` — Restart the running server instance.
+*   `/speedtest` — Perform a network speed check on the hosting server.
 
 ---
 
@@ -193,27 +168,27 @@ Copy `config_sample.env` → `config.env` and fill in your values.
 
 ### 🚀 Render (One-Click)
 
-1. Click below to deploy:
+1.  Click the deploy button:
 
-   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
+    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
 
-2. Set the required environment variables: `API_ID`, `API_HASH`, `BOT_TOKEN`, `OWNER_ID`, `BIN_CHANNEL`, `DATABASE_URL`.
-3. After first deploy, copy your Render URL (e.g. `your-app.onrender.com`), set it as `FQDN`, and re-deploy.
+2.  Fill in the required Environment Variables.
+3.  Once the build succeeds, copy the public URL, set it as `FQDN` in settings, and re-trigger deployment.
 
 ---
 
 ### 🐳 Docker
 
 ```bash
-# 1. Clone the main branch
+# 1. Clone the repository
 git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
-# 2. Configure environment
+# 2. Add configuration
 cp config_sample.env config.env
-nano config.env   # fill in your values
+nano config.env
 
-# 3. Build & run
+# 3. Run container
 docker build -t pagestream .
 docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
 ```
@@ -223,18 +198,18 @@ docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
 ### 🖥️ Manual / Virtualenv
 
 ```bash
-# 1. Clone the main branch
+# 1. Clone the repository
 git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
 cd Smart-Book-to-Link
 
-# 2. Create and activate virtual environment
+# 2. Virtual environment setup
 python3 -m venv venv
 source venv/bin/activate
 
-# 3. Install pinned dependencies
+# 3. Dependencies installation
 pip install -r requirements.txt
 
-# 4. Configure and run
+# 4. Start the application
 cp config_sample.env config.env
 nano config.env
 python3 -m PageStream
@@ -244,28 +219,23 @@ python3 -m PageStream
 
 ## Tech Stack
 
-| Layer | Library | Version |
-|---|---|---|
-| Telegram MTProto | `pyrofork` | 2.3.69 |
-| Crypto | `tgcrypto` | 1.2.5 |
-| Web Server | `aiohttp` | 3.11.18 |
-| Templates | `Jinja2` | 3.1.6 |
-| Database | `pymongo` | 4.17.0 |
-| Config | `python-dotenv` | 1.2.2 |
-| System Stats | `psutil` | 7.2.2 |
-| Event Loop | `uvloop` | 0.21.0 |
-| Speed Test | `speedtest-cli` | 2.1.3 |
-| Scraping | `cloudscraper` | 1.2.71 |
+*   **Core MTProto Engine**: `pyrofork` + `tgcrypto`
+*   **Web Framework**: `aiohttp`
+*   **Templates**: `Jinja2`
+*   **Database Client**: `pymongo`
+*   **Event Loop**: `uvloop`
+*   **Performance Monitoring**: `psutil`
+*   **Security & Encryption**: Built-in time hashes and tokens
 
 ---
 
 ## License
 
-This project is licensed under the [Apache License 2.0](LICENSE).
+Distributed under the Apache License 2.0. See [LICENSE](LICENSE) for more details.
 
 ---
 
 <p align="center">
   Made with ❤️ by <a href="https://github.com/muhammedadnank">muhammedadnank</a><br>
-  <b>⭐ Star this project if you find it useful!</b>
+  <b>⭐ Star this repository if you find it helpful!</b>
 </p>
