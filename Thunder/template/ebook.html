@@ -14,6 +14,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 
+    <!-- JSZip (for EPUB.js and Comic parsing) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" integrity="sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==" crossorigin="anonymous"></script>
     <!-- EPUB.js -->
     <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 
@@ -799,16 +801,6 @@
         pdfViewer.style.display     = 'flex';
         pdfViewer.style.justifyContent = 'center';
         pdfViewer.style.alignItems = 'center';
-
-        const script  = document.createElement('script');
-        script.src    = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
-        script.integrity    = 'sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==';
-        script.crossOrigin  = 'anonymous';
-        document.head.appendChild(script);
-        await new Promise((resolve, reject) => {
-            script.onload  = resolve;
-            script.onerror = () => reject(new Error('JSZip failed to load'));
-        });
 
         try {
             const loadingText = document.querySelector('#loading .loading-text');
