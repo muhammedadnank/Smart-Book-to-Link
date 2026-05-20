@@ -1,0 +1,37 @@
+services:
+  - type: web
+    name: smart-book-to-link
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash thunder.sh
+    envVars:
+      - key: API_ID
+        sync: false
+        description: "Telegram API ID from my.telegram.org"
+      - key: API_HASH
+        sync: false
+        description: "Telegram API Hash from my.telegram.org"
+      - key: BOT_TOKEN
+        sync: false
+        description: "Bot token from @BotFather"
+      - key: BIN_CHANNEL
+        sync: false
+        description: "Private storage channel ID (must start with -100)"
+      - key: OWNER_ID
+        sync: false
+        description: "Your Telegram User ID for Admin access"
+      - key: DATABASE_URL
+        sync: false
+        description: "MongoDB connection string"
+      - key: FQDN
+        sync: false
+        description: "Render Web Service URL (e.g. your-app.onrender.com, without https://)"
+      - key: PORT
+        value: 8080
+      - key: BIND_ADDRESS
+        value: 0.0.0.0
+      - key: PING_INTERVAL
+        value: 840
+      - key: NO_PORT
+        value: "True"
