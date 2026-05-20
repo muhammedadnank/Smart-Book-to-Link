@@ -14,17 +14,17 @@
 
     <!-- SEO & Social Sharing (Open Graph) -->
     <meta name="description"
-        content="A premium cinema experience for '{{ file_name }}'. Stream in high quality with advanced controls.">
+        content="Listen to '{{ file_name }}' in high quality with advanced controls.">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="{{ file_name }} — Cinema">
+    <meta property="og:title" content="{{ file_name }} — Audio Player">
     <meta property="og:description"
-        content="Stream '{{ file_name }}' in a beautiful, atmospheric environment with professional playback controls.">
+        content="Listen to '{{ file_name }}' in a beautiful, atmospheric environment.">
     <meta property="og:image" content="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png">
 
     <!-- Twitter Cards -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="{{ file_name }} — Cinema">
-    <meta name="twitter:description" content="Stream '{{ file_name }}' in a beautiful, atmospheric environment.">
+    <meta name="twitter:title" content="{{ file_name }} — Audio Player">
+    <meta name="twitter:description" content="Listen to '{{ file_name }}' in a beautiful, atmospheric environment.">
     <meta name="twitter:image" content="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png">
 
     <!-- Vidstack Player -->
@@ -47,6 +47,160 @@
     <!-- Styles (CDN-hosted) -->
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/Obsidian%20Ember/styles.css">
+
+    <style>
+        /* Audio-focused overrides */
+        .screen {
+            aspect-ratio: auto !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            padding: var(--space-md) 0;
+        }
+
+        .audio-card {
+            width: 100%;
+            max-width: 460px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+            border: 1px solid var(--glass-border);
+            border-top-color: var(--glass-highlight);
+            border-radius: 24px;
+            padding: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 28px;
+            box-shadow: 
+                0 30px 60px -15px rgba(0, 0, 0, 0.5),
+                0 0 50px -10px var(--ember-glow),
+                inset 0 0 40px -20px var(--ember-dim);
+            transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s ease;
+        }
+
+        [data-theme="light"] .audio-card {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.08);
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.1),
+                0 0 30px -10px var(--ember-glow);
+        }
+
+        /* Vinyl Record styling */
+        .vinyl-container {
+            position: relative;
+            width: 220px;
+            height: 220px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+            padding: 10px;
+        }
+
+        [data-theme="light"] .vinyl-container {
+            background: rgba(0, 0, 0, 0.05);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .vinyl-record {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, #222 0%, #111 40%, #050505 100%);
+            border-radius: 50%;
+            box-shadow: 
+                0 10px 30px -5px rgba(0, 0, 0, 0.6),
+                0 0 0 4px rgba(255, 255, 255, 0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: spin 15s linear infinite;
+            animation-play-state: paused;
+            will-change: transform;
+        }
+
+        .vinyl-record.playing {
+            animation-play-state: running;
+        }
+
+        .vinyl-grooves {
+            position: absolute;
+            inset: 15px;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                circle,
+                transparent,
+                transparent 4px,
+                rgba(255, 255, 255, 0.03) 4px,
+                rgba(255, 255, 255, 0.03) 5px
+            );
+            pointer-events: none;
+        }
+
+        [data-theme="light"] .vinyl-grooves {
+            background: repeating-radial-gradient(
+                circle,
+                transparent,
+                transparent 4px,
+                rgba(0, 0, 0, 0.03) 4px,
+                rgba(0, 0, 0, 0.03) 5px
+            );
+        }
+
+        .vinyl-center {
+            position: relative;
+            width: 60px;
+            height: 60px;
+            background: var(--ember);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: background-color 0.4s ease;
+        }
+
+        .vinyl-dot {
+            width: 14px;
+            height: 14px;
+            background: var(--void);
+            border-radius: 50%;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.4s ease;
+        }
+
+        .player-container {
+            width: 100%;
+        }
+
+        /* Vidstack audio layout styling customization */
+        media-player {
+            height: auto !important;
+        }
+
+        /* Hide background message icon on audio layout */
+        .player-background-message {
+            display: none !important;
+        }
+
+        #metaResolution {
+            display: none !important;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 
 <body>
@@ -94,21 +248,25 @@
             </button>
         </header>
 
-        <!-- Cinema Screen -->
+        <!-- Audio Player Screen -->
         <section class="cinema">
             <div class="screen">
-                <div class="player-background-message">
-                    <svg class="bg-msg-icon" viewBox="0 0 24 24" fill="currentColor">
-                        <path
-                            d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM9.5 7.5v9l7-4.5-7-4.5z" />
-                    </svg>
-                    <span class="bg-msg-title">If video not playing</span>
-                    <span class="bg-msg-sub">Use External Player</span>
+                <div class="audio-card">
+                    <div class="vinyl-container">
+                        <div class="vinyl-record" id="vinylRecord">
+                            <div class="vinyl-grooves"></div>
+                            <div class="vinyl-center">
+                                <div class="vinyl-dot"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="player-container">
+                        <media-player id="player" title="{{ file_name }}" playsinline keyTarget="document">
+                            <media-provider></media-provider>
+                            <media-audio-layout></media-audio-layout>
+                        </media-player>
+                    </div>
                 </div>
-                <media-player id="player" title="{{ file_name }}" playsinline keyTarget="document">
-                    <media-provider></media-provider>
-                    <media-video-layout></media-video-layout>
-                </media-player>
             </div>
         </section>
 
@@ -135,10 +293,9 @@
                 <div class="cmd-divider"></div>
 
                 <button class="cmd-btn drawer-trigger" id="playersToggle" aria-expanded="false"
-                    aria-controls="playersDrawer" aria-label="Open in external player">
+                    aria-controls="playersDrawer" aria-label="Open in external app">
                     <svg viewBox="0 0 24 24">
-                        <path
-                            d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zM9.5 7.5v9l7-4.5-7-4.5z" />
+                        <path d="M12 2a9 9 0 0 0-9 9v7a3 3 0 0 0 3 3h3v-8H5v-2a7 7 0 0 1 14 0v2h-4v8h3a3 3 0 0 0 3-3v-7a9 9 0 0 0-9-9z"/>
                     </svg>
                     <span>Open In</span>
                     <svg class="chevron" viewBox="0 0 24 24">
@@ -155,63 +312,63 @@
                 <div class="player-group" id="androidGroup">
                     <div class="group-label">Android</div>
                     <div class="player-grid">
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=org.videolan.vlc;end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=org.videolan.vlc;end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             VLC
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.mxtech.videoplayer.ad;S.title={{ file_name | urlencode }};end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=com.mxtech.videoplayer.ad;S.title={{ file_name | urlencode }};end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             MX Player
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.mxtech.videoplayer.pro;S.title={{ file_name | urlencode }};end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=com.mxtech.videoplayer.pro;S.title={{ file_name | urlencode }};end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             MX Player Pro
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.young.simple.player;end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=com.young.simple.player;end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             Splayer
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=dev.anilbeesetti.nextplayer;S.title={{ file_name | urlencode }};end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=dev.anilbeesetti.nextplayer;S.title={{ file_name | urlencode }};end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             Next Player
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=org.courville.nova;S.title={{ file_name | urlencode }};end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=org.courville.nova;S.title={{ file_name | urlencode }};end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             Nova Player
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=is.xyz.mpv;S.title={{ file_name | urlencode }};end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=is.xyz.mpv;S.title={{ file_name | urlencode }};end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             MPV-Android
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.brouken.player;end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=com.brouken.player;end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
                             </svg>
                             Just Player
                         </a>
-                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=video/*;package=com.newin.nplayer.pro;end"
+                        <a href="intent:{{ src|safe }}#Intent;action=android.intent.action.VIEW;type=audio/*;package=com.newin.nplayer.pro;end"
                             class="player-link">
                             <svg viewBox="0 0 24 24">
                                 <circle cx="12" cy="12" r="10" />
@@ -315,10 +472,6 @@
                         <span>Volume</span>
                     </div>
                     <div class="hint">
-                        <kbd>F</kbd>
-                        <span>Fullscreen</span>
-                    </div>
-                    <div class="hint">
                         <kbd>M</kbd>
                         <span>Mute</span>
                     </div>
@@ -359,6 +512,23 @@
             srcUrl = parsedUrl.toString();
         } catch (e) {}
         window.__CINEMA_CONFIG__ = { src: srcUrl };
+
+        // Handle Vinyl rotation based on play/pause
+        document.addEventListener('DOMContentLoaded', () => {
+            customElements.whenDefined('media-player').then(() => {
+                const player = document.getElementById('player');
+                const vinyl = document.getElementById('vinylRecord');
+                if (player && vinyl) {
+                    player.subscribe(({ paused }) => {
+                        if (paused) {
+                            vinyl.classList.remove('playing');
+                        } else {
+                            vinyl.classList.add('playing');
+                        }
+                    });
+                }
+            });
+        });
     </script>
     <!-- Main Script (CDN-hosted) -->
     <script src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/Obsidian%20Ember/script.js"></script>
