@@ -252,7 +252,7 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            background: #2a2838;
+            background: var(--bg);
         }
         #pdf-viewer::-webkit-scrollbar { width: 6px; }
         #pdf-viewer::-webkit-scrollbar-track { background: transparent; }
@@ -381,16 +381,16 @@
         }
     </style>
 </head>
-<body>
+<body class="theme-dark">
 
     <!-- Toolbar -->
     <div class="toolbar">
-        <button class="toolbar-btn" id="btn-toc" title="Toggle Table of Contents">
+        <button class="toolbar-btn toc-control" id="btn-toc" title="Toggle Table of Contents">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
             TOC
         </button>
 
-        <div class="toolbar-divider"></div>
+        <div class="toolbar-divider toc-control"></div>
 
         <div class="toolbar-title">
             <strong>{{ file_name }}</strong>
@@ -403,14 +403,14 @@
             <span id="progress-text">0%</span>
         </div>
 
-        <div class="toolbar-divider"></div>
+        <div class="toolbar-divider theme-control"></div>
 
         <!-- Theme buttons (EPUB only) -->
-        <button class="toolbar-btn" id="btn-theme-light" title="Light theme">☀</button>
-        <button class="toolbar-btn" id="btn-theme-sepia" title="Sepia theme">📜</button>
-        <button class="toolbar-btn active" id="btn-theme-dark" title="Dark theme">🌙</button>
+        <button class="toolbar-btn theme-control" id="btn-theme-light" title="Light theme">☀</button>
+        <button class="toolbar-btn theme-control" id="btn-theme-sepia" title="Sepia theme">📜</button>
+        <button class="toolbar-btn theme-control active" id="btn-theme-dark" title="Dark theme">🌙</button>
 
-        <div class="toolbar-divider"></div>
+        <div class="toolbar-divider theme-control"></div>
 
         <a class="toolbar-btn" href="{{ src|safe }}" download="{{ file_name }}" title="Download file">
             <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v6h5.66V9h3.84L12 2z"/></svg>
@@ -440,22 +440,25 @@
                 <button class="font-btn" id="font-inc">+</button>
             </div>
 
-            <!-- EPUB viewer area -->
-            <div id="epub-viewer">
-                <div class="loading-overlay" id="loading">
-                    <div class="spinner"></div>
-                    <div class="loading-text">Opening ebook…</div>
-                </div>
-                <button class="nav-arrow nav-prev" id="prev-btn" title="Previous page (←)">
-                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-                </button>
-                <button class="nav-arrow nav-next" id="next-btn" title="Next page (→)">
-                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-                </button>
+            <!-- Loading overlay -->
+            <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Opening ebook…</div>
             </div>
+
+            <!-- EPUB viewer area -->
+            <div id="epub-viewer"></div>
 
             <!-- PDF viewer area -->
             <div id="pdf-viewer"></div>
+
+            <!-- Nav arrows -->
+            <button class="nav-arrow nav-prev" id="prev-btn" title="Previous page (←)">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <button class="nav-arrow nav-next" id="next-btn" title="Next page (→)">
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
 
             <!-- Error / unsupported -->
             <div class="error-screen" id="error-screen">
@@ -507,27 +510,45 @@
         sidebar.classList.toggle('hidden');
     });
 
-    /* ── Theme buttons (EPUB) ─────────────────────── */
+    /* ── Theme management ─────────────────────────── */
     let epubRendition = null;
     let currentFontSize = 100;
+    let currentTheme = 'dark';
     const THEMES = {
         light: { background: '#f7f4ef', color: '#1a1714' },
         sepia: { background: '#f5ecd7', color: '#3b2e1a' },
         dark:  { background: '#1c1a25', color: '#e0dde8' }
     };
-    function applyEpubTheme(name) {
-        document.querySelectorAll('[id^=btn-theme]').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-theme-' + name).classList.add('active');
-        if (!epubRendition) return;
-        const t = THEMES[name];
-        epubRendition.themes.default({
-            body: { background: t.background + ' !important', color: t.color + ' !important' },
-            p: { color: t.color + ' !important' }
-        });
+    function hideNonEpubControls() {
+        document.querySelectorAll('.theme-control').forEach(el => el.style.display = 'none');
+        document.querySelectorAll('.toc-control').forEach(el => el.style.display = 'none');
+        sidebar.classList.add('hidden');
     }
-    document.getElementById('btn-theme-light').addEventListener('click', () => applyEpubTheme('light'));
-    document.getElementById('btn-theme-sepia').addEventListener('click', () => applyEpubTheme('sepia'));
-    document.getElementById('btn-theme-dark').addEventListener('click',  () => applyEpubTheme('dark'));
+    function applyTheme(name) {
+        currentTheme = name;
+        document.querySelectorAll('[id^=btn-theme]').forEach(b => b.classList.remove('active'));
+        const activeBtn = document.getElementById('btn-theme-' + name);
+        if (activeBtn) activeBtn.classList.add('active');
+        
+        document.body.classList.remove('theme-sepia', 'theme-dark');
+        if (name === 'sepia' || name === 'dark') {
+            document.body.classList.add('theme-' + name);
+        }
+        
+        if (epubRendition) {
+            const t = THEMES[name];
+            epubRendition.themes.default({
+                body: { background: t.background + ' !important', color: t.color + ' !important' },
+                p: { color: t.color + ' !important' }
+            });
+        }
+    }
+    document.getElementById('btn-theme-light').addEventListener('click', () => applyTheme('light'));
+    document.getElementById('btn-theme-sepia').addEventListener('click', () => applyTheme('sepia'));
+    document.getElementById('btn-theme-dark').addEventListener('click',  () => applyTheme('dark'));
+
+    // Set initial dark theme
+    applyTheme('dark');
 
     /* ── Font size (EPUB) ─────────────────────────── */
     function updateFontSize() {
@@ -550,6 +571,9 @@
         epubViewer.style.display = 'none';
         pdfViewer.style.display  = 'none';
         fontSizeBar.style.display = 'none';
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        hideNonEpubControls();
     }
 
     /* ─────────────────────────────────────────────── */
@@ -573,13 +597,8 @@
         epubRendition = rendition;
 
         rendition.display();
-
-        // Apply default dark theme
-        rendition.themes.default({
-            body: { background: '#1c1a25 !important', color: '#e0dde8 !important' },
-            p:    { color: '#e0dde8 !important' }
-        });
-        rendition.themes.fontSize('100%');
+        applyTheme(currentTheme);
+        rendition.themes.fontSize(currentFontSize + '%');
 
         book.ready.then(() => {
             loading.classList.add('hidden');
@@ -639,6 +658,7 @@
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'flex';
+        hideNonEpubControls();
 
         // Dynamically load PDF.js
         const script = document.createElement('script');
@@ -695,12 +715,6 @@
                 pdfViewer.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
             });
 
-            // Keep prev/next visible but repositioned over PDF viewer
-            prevBtn.style.position = 'fixed';
-            prevBtn.style.left = '12px';
-            nextBtn.style.position = 'fixed';
-            nextBtn.style.right = '12px';
-
         } catch (err) {
             showError('Could not render PDF: ' + (err && err.message ? err.message : 'Unknown error') + '. Try downloading the file.');
         }
@@ -722,6 +736,7 @@
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'flex';
+        hideNonEpubControls();
 
         // Dynamically load JSZip
         const script = document.createElement('script');
@@ -792,11 +807,6 @@
                 pdfViewer.scrollBy({ top: window.innerHeight * 0.8, behavior: 'smooth' });
             });
 
-            prevBtn.style.position = 'fixed';
-            prevBtn.style.left = '12px';
-            nextBtn.style.position = 'fixed';
-            nextBtn.style.right = '12px';
-
         } catch (err) {
             showError('Could not render CBZ archive: ' + err.message + '. Try downloading the file.');
         }
@@ -809,6 +819,7 @@
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'none';
+        hideNonEpubControls();
         
         showError('This book is optimized for offline reading. Press Download to enjoy it in your favourite ebook reader application.');
         
