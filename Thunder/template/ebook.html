@@ -209,7 +209,6 @@
             position: relative;
         }
 
-        /* Font size controls */
         .font-size-bar {
             display: flex;
             align-items: center;
@@ -236,14 +235,12 @@
         .font-btn:hover { background: var(--accent); color: var(--bg); }
         .font-size-val { min-width: 36px; text-align: center; }
 
-        /* EPUB viewer */
         #epub-viewer {
             flex: 1;
             overflow: hidden;
             position: relative;
         }
 
-        /* PDF viewer */
         #pdf-viewer {
             flex: 1;
             overflow-y: auto;
@@ -252,7 +249,7 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            background: var(--bg);
+            background: #2a2838;
         }
         #pdf-viewer::-webkit-scrollbar { width: 6px; }
         #pdf-viewer::-webkit-scrollbar-track { background: transparent; }
@@ -267,7 +264,6 @@
         }
         .pdf-page-wrap canvas { display: block; max-width: 100%; height: auto; }
 
-        /* Nav arrows */
         .nav-arrow {
             position: absolute;
             top: 50%;
@@ -288,7 +284,6 @@
         .nav-prev { left: 12px; }
         .nav-next { right: 12px; }
 
-        /* Loading overlay */
         .loading-overlay {
             position: absolute; inset: 0;
             background: var(--bg);
@@ -318,7 +313,6 @@
             letter-spacing: 0.05em;
         }
 
-        /* Error / unsupported */
         .error-screen {
             flex: 1;
             display: flex;
@@ -350,19 +344,6 @@
         }
         .download-btn:hover { opacity: 0.85; }
 
-        /* Dark/light mode toggle for reader */
-        .reader-iframe-wrap { flex: 1; display: flex; overflow: hidden; }
-        iframe#epub-iframe {
-            border: none;
-            flex: 1;
-            background: var(--reader-bg);
-        }
-
-        /* Theme: sepia */
-        body.theme-sepia { --reader-bg: #f5ecd7; --reader-text: #3b2e1a; }
-        body.theme-dark  { --reader-bg: var(--reader-bg-dark); --reader-text: var(--reader-text-dark); }
-
-        /* Keyboard hint */
         .kb-hint {
             text-align: center;
             padding: 6px;
@@ -381,16 +362,15 @@
         }
     </style>
 </head>
-<body class="theme-dark">
+<body>
 
-    <!-- Toolbar -->
     <div class="toolbar">
-        <button class="toolbar-btn toc-control" id="btn-toc" title="Toggle Table of Contents">
+        <button class="toolbar-btn" id="btn-toc" title="Toggle Table of Contents">
             <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
             TOC
         </button>
 
-        <div class="toolbar-divider toc-control"></div>
+        <div class="toolbar-divider"></div>
 
         <div class="toolbar-title">
             <strong>{{ file_name }}</strong>
@@ -403,14 +383,13 @@
             <span id="progress-text">0%</span>
         </div>
 
-        <div class="toolbar-divider theme-control"></div>
+        <div class="toolbar-divider"></div>
 
-        <!-- Theme buttons (EPUB only) -->
-        <button class="toolbar-btn theme-control" id="btn-theme-light" title="Light theme">☀</button>
-        <button class="toolbar-btn theme-control" id="btn-theme-sepia" title="Sepia theme">📜</button>
-        <button class="toolbar-btn theme-control active" id="btn-theme-dark" title="Dark theme">🌙</button>
+        <button class="toolbar-btn" id="btn-theme-light" title="Light theme">☀</button>
+        <button class="toolbar-btn" id="btn-theme-sepia" title="Sepia theme">📜</button>
+        <button class="toolbar-btn active" id="btn-theme-dark" title="Dark theme">🌙</button>
 
-        <div class="toolbar-divider theme-control"></div>
+        <div class="toolbar-divider"></div>
 
         <a class="toolbar-btn" href="{{ src|safe }}" download="{{ file_name }}" title="Download file">
             <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v6h5.66V9h3.84L12 2z"/></svg>
@@ -418,10 +397,7 @@
         </a>
     </div>
 
-    <!-- Layout -->
     <div class="layout">
-
-        <!-- Sidebar -->
         <nav class="sidebar" id="sidebar">
             <div class="sidebar-header">Table of Contents</div>
             <ul class="toc-list" id="toc-list">
@@ -429,10 +405,7 @@
             </ul>
         </nav>
 
-        <!-- Reader -->
         <div class="reader-wrap" id="reader-wrap">
-
-            <!-- Font size bar (EPUB only) -->
             <div class="font-size-bar" id="font-size-bar">
                 <span class="label">Font size:</span>
                 <button class="font-btn" id="font-dec">−</button>
@@ -440,27 +413,21 @@
                 <button class="font-btn" id="font-inc">+</button>
             </div>
 
-            <!-- Loading overlay -->
-            <div class="loading-overlay" id="loading">
-                <div class="spinner"></div>
-                <div class="loading-text">Opening ebook…</div>
+            <div id="epub-viewer">
+                <div class="loading-overlay" id="loading">
+                    <div class="spinner"></div>
+                    <div class="loading-text">Opening ebook…</div>
+                </div>
+                <button class="nav-arrow nav-prev" id="prev-btn" title="Previous page (←)">
+                    <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                </button>
+                <button class="nav-arrow nav-next" id="next-btn" title="Next page (→)">
+                    <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                </button>
             </div>
 
-            <!-- EPUB viewer area -->
-            <div id="epub-viewer"></div>
-
-            <!-- PDF viewer area -->
             <div id="pdf-viewer"></div>
 
-            <!-- Nav arrows -->
-            <button class="nav-arrow nav-prev" id="prev-btn" title="Previous page (←)">
-                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
-            </button>
-            <button class="nav-arrow nav-next" id="next-btn" title="Next page (→)">
-                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
-            </button>
-
-            <!-- Error / unsupported -->
             <div class="error-screen" id="error-screen">
                 <div class="error-icon">📖</div>
                 <div class="error-title">Unable to render this file</div>
@@ -470,118 +437,57 @@
                     Download instead
                 </a>
             </div>
-
         </div>
     </div>
 
-    <!-- Keyboard hint -->
     <div class="kb-hint">← → arrow keys to turn pages &nbsp;·&nbsp; T toggle contents</div>
 
 <script>
 (function () {
-    let FILE_URL = "{{ src|safe }}";
-    try {
-        const parsedUrl = new URL(FILE_URL);
-        parsedUrl.protocol = window.location.protocol;
-        parsedUrl.host = window.location.host;
-        FILE_URL = parsedUrl.toString();
-    } catch (e) {}
+    const FILE_URL  = "{{ src|safe }}";
     const FILE_NAME = "{{ file_name }}";
-    const FILE_TYPE = "{{ file_type }}";   // "epub" or "pdf"
+    const FILE_TYPE = "{{ file_type }}";
 
-    /* ── Progress Fetch Utility ───────────────────── */
-    async function fetchWithProgress(url, onProgress) {
-        const response = await fetch(url);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const reader = response.body.getReader();
-        const contentLength = +response.headers.get('Content-Length');
-        
-        let receivedLength = 0;
-        let chunks = [];
-        while(true) {
-            const {done, value} = await reader.read();
-            if (done) break;
-            chunks.push(value);
-            receivedLength += value.length;
-            if (contentLength) {
-                const pct = Math.round((receivedLength / contentLength) * 100);
-                onProgress(pct, receivedLength);
-            } else {
-                onProgress(null, receivedLength);
-            }
-        }
-        
-        let chunksAll = new Uint8Array(receivedLength);
-        let position = 0;
-        for(let chunk of chunks) {
-            chunksAll.set(chunk, position);
-            position += chunk.length;
-        }
-        return chunksAll.buffer;
-    }
+    const sidebar      = document.getElementById('sidebar');
+    const tocList      = document.getElementById('toc-list');
+    const epubViewer   = document.getElementById('epub-viewer');
+    const pdfViewer    = document.getElementById('pdf-viewer');
+    const loading      = document.getElementById('loading');
+    const errorScreen  = document.getElementById('error-screen');
+    const errorDesc    = document.getElementById('error-desc');
+    const progressBar  = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+    const progressWrap = document.getElementById('progress-wrap');
+    const fontSizeBar  = document.getElementById('font-size-bar');
+    const fontSizeVal  = document.getElementById('font-size-val');
+    const prevBtn      = document.getElementById('prev-btn');
+    const nextBtn      = document.getElementById('next-btn');
 
-    /* ── DOM refs ─────────────────────────────────── */
-    const sidebar        = document.getElementById('sidebar');
-    const tocList        = document.getElementById('toc-list');
-    const epubViewer     = document.getElementById('epub-viewer');
-    const pdfViewer      = document.getElementById('pdf-viewer');
-    const loading        = document.getElementById('loading');
-    const errorScreen    = document.getElementById('error-screen');
-    const errorDesc      = document.getElementById('error-desc');
-    const progressBar    = document.getElementById('progress-bar');
-    const progressText   = document.getElementById('progress-text');
-    const progressWrap   = document.getElementById('progress-wrap');
-    const fontSizeBar    = document.getElementById('font-size-bar');
-    const fontSizeVal    = document.getElementById('font-size-val');
-    const prevBtn        = document.getElementById('prev-btn');
-    const nextBtn        = document.getElementById('next-btn');
-
-    /* ── Sidebar toggle ───────────────────────────── */
     document.getElementById('btn-toc').addEventListener('click', () => {
         sidebar.classList.toggle('hidden');
     });
 
-    /* ── Theme management ─────────────────────────── */
-    let epubRendition = null;
+    let epubRendition  = null;
     let currentFontSize = 100;
-    let currentTheme = 'dark';
     const THEMES = {
         light: { background: '#f7f4ef', color: '#1a1714' },
         sepia: { background: '#f5ecd7', color: '#3b2e1a' },
         dark:  { background: '#1c1a25', color: '#e0dde8' }
     };
-    function hideNonEpubControls() {
-        document.querySelectorAll('.theme-control').forEach(el => el.style.display = 'none');
-        document.querySelectorAll('.toc-control').forEach(el => el.style.display = 'none');
-        sidebar.classList.add('hidden');
-    }
-    function applyTheme(name) {
-        currentTheme = name;
+    function applyEpubTheme(name) {
         document.querySelectorAll('[id^=btn-theme]').forEach(b => b.classList.remove('active'));
-        const activeBtn = document.getElementById('btn-theme-' + name);
-        if (activeBtn) activeBtn.classList.add('active');
-        
-        document.body.classList.remove('theme-sepia', 'theme-dark');
-        if (name === 'sepia' || name === 'dark') {
-            document.body.classList.add('theme-' + name);
-        }
-        
-        if (epubRendition) {
-            const t = THEMES[name];
-            epubRendition.themes.default({
-                body: { background: t.background + ' !important', color: t.color + ' !important' },
-                p: { color: t.color + ' !important' }
-            });
-        }
+        document.getElementById('btn-theme-' + name).classList.add('active');
+        if (!epubRendition) return;
+        const t = THEMES[name];
+        epubRendition.themes.default({
+            body: { background: t.background + ' !important', color: t.color + ' !important' },
+            p:    { color: t.color + ' !important' }
+        });
     }
-    document.getElementById('btn-theme-light').addEventListener('click', () => applyTheme('light'));
-    document.getElementById('btn-theme-sepia').addEventListener('click', () => applyTheme('sepia'));
-    document.getElementById('btn-theme-dark').addEventListener('click',  () => applyTheme('dark'));
+    document.getElementById('btn-theme-light').addEventListener('click', () => applyEpubTheme('light'));
+    document.getElementById('btn-theme-sepia').addEventListener('click', () => applyEpubTheme('sepia'));
+    document.getElementById('btn-theme-dark').addEventListener('click',  () => applyEpubTheme('dark'));
 
-    // Set initial dark theme
-    applyTheme('dark');
-
-    /* ── Font size (EPUB) ─────────────────────────── */
     function updateFontSize() {
         fontSizeVal.textContent = currentFontSize + '%';
         if (!epubRendition) return;
@@ -594,156 +500,104 @@
         if (currentFontSize < 200) { currentFontSize += 10; updateFontSize(); }
     });
 
-    /* ── Show error ───────────────────────────────── */
     function showError(msg) {
         loading.classList.add('hidden');
         errorDesc.textContent = msg || 'Unable to display this file.';
         errorScreen.style.display = 'flex';
-        epubViewer.style.display = 'none';
-        pdfViewer.style.display  = 'none';
+        epubViewer.style.display  = 'none';
+        pdfViewer.style.display   = 'none';
         fontSizeBar.style.display = 'none';
-        prevBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-        hideNonEpubControls();
     }
 
-    /* ─────────────────────────────────────────────── */
-    /*  EPUB LOADING                                   */
-    /* ─────────────────────────────────────────────── */
-    async function loadEpub() {
+    /* ── EPUB ─────────────────────────────────────── */
+    function loadEpub() {
         if (typeof ePub === 'undefined') {
             showError('EPUB.js library failed to load. Please download the file instead.');
             return;
         }
-
         pdfViewer.style.display = 'none';
+        const book = ePub(FILE_URL);
+        const rendition = book.renderTo('epub-viewer', {
+            width: '100%', height: '100%', spread: 'none', flow: 'paginated'
+        });
+        epubRendition = rendition;
+        rendition.display();
+        rendition.themes.default({
+            body: { background: '#1c1a25 !important', color: '#e0dde8 !important' },
+            p:    { color: '#e0dde8 !important' }
+        });
+        rendition.themes.fontSize('100%');
 
-        try {
-            const bookData = await fetchWithProgress(FILE_URL, (pct, loaded) => {
-                if (pct !== null) {
-                    loading.querySelector('.loading-text').textContent = `Downloading EPUB: ${pct}%…`;
-                } else {
-                    loading.querySelector('.loading-text').textContent = `Downloading EPUB… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
-                }
-            });
-
-            loading.querySelector('.loading-text').textContent = 'Opening EPUB…';
-            const book = ePub(bookData);
-            const rendition = book.renderTo('epub-viewer', {
-                width: '100%',
-                height: '100%',
-                spread: 'none',
-                flow: 'paginated'
-            });
-            epubRendition = rendition;
-
-            rendition.display();
-            applyTheme(currentTheme);
-            rendition.themes.fontSize(currentFontSize + '%');
-
-            book.ready.then(() => {
-                loading.classList.add('hidden');
-                progressWrap.style.display = 'flex';
-
-                // Navigation
-                prevBtn.addEventListener('click', () => rendition.prev());
-                nextBtn.addEventListener('click', () => rendition.next());
-
-                // TOC
-                return book.loaded.navigation;
-            }).then(nav => {
-                tocList.innerHTML = '';
-                if (!nav || !nav.toc || nav.toc.length === 0) {
-                    tocList.innerHTML = '<li class="toc-item"><a href="#" style="font-style:italic">No contents</a></li>';
-                    return;
-                }
-                function renderToc(items, level) {
-                    items.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'toc-item' + (level > 0 ? ' sub' : '');
-                        const a = document.createElement('a');
-                        a.href = '#';
-                        a.textContent = item.label.trim();
-                        a.addEventListener('click', e => {
-                            e.preventDefault();
-                            rendition.display(item.href);
-                            tocList.querySelectorAll('a').forEach(x => x.classList.remove('active'));
-                            a.classList.add('active');
-                        });
-                        li.appendChild(a);
-                        tocList.appendChild(li);
-                        if (item.subitems && item.subitems.length) renderToc(item.subitems, level + 1);
+        book.ready.then(() => {
+            loading.classList.add('hidden');
+            progressWrap.style.display = 'flex';
+            prevBtn.addEventListener('click', () => rendition.prev());
+            nextBtn.addEventListener('click', () => rendition.next());
+            return book.loaded.navigation;
+        }).then(nav => {
+            tocList.innerHTML = '';
+            if (!nav || !nav.toc || nav.toc.length === 0) {
+                tocList.innerHTML = '<li class="toc-item"><a href="#" style="font-style:italic">No contents</a></li>';
+                return;
+            }
+            function renderToc(items, level) {
+                items.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'toc-item' + (level > 0 ? ' sub' : '');
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.textContent = item.label.trim();
+                    a.addEventListener('click', e => {
+                        e.preventDefault();
+                        rendition.display(item.href);
+                        tocList.querySelectorAll('a').forEach(x => x.classList.remove('active'));
+                        a.classList.add('active');
                     });
-                }
-                renderToc(nav.toc, 0);
-            }).catch(err => {
-                showError('Could not load EPUB: ' + err.message);
-            });
+                    li.appendChild(a);
+                    tocList.appendChild(li);
+                    if (item.subitems && item.subitems.length) renderToc(item.subitems, level + 1);
+                });
+            }
+            renderToc(nav.toc, 0);
+        }).catch(err => {
+            showError('Could not load EPUB: ' + err.message);
+        });
 
-            // Progress tracking
-            rendition.on('relocated', location => {
-                const pct = Math.round((location.start.percentage || 0) * 100);
-                progressBar.style.width = pct + '%';
-                progressText.textContent = pct + '%';
-            });
+        rendition.on('relocated', location => {
+            const pct = Math.round((location.start.percentage || 0) * 100);
+            progressBar.style.width  = pct + '%';
+            progressText.textContent = pct + '%';
+        });
 
-            book.on('openFailed', err => {
-                showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));
-            });
-        } catch (err) {
-            showError('Could not download EPUB file: ' + err.message);
-        }
+        book.on('openFailed', err => {
+            showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));
+        });
     }
 
-    /* ─────────────────────────────────────────────── */
-    /*  PDF LOADING (PDF.js via CDN)                   */
-    /* ─────────────────────────────────────────────── */
+    /* ── PDF ──────────────────────────────────────── */
     async function loadPdf() {
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'flex';
-        hideNonEpubControls();
-
-        // Dynamically load PDF.js
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs';
-        script.type = 'module';
-        document.head.appendChild(script);
-
-        // Use importmap-free approach with dynamic import
         try {
             const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.min.mjs');
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@4.4.168/build/pdf.worker.min.mjs';
 
-            const pdfData = await fetchWithProgress(FILE_URL, (pct, loaded) => {
-                if (pct !== null) {
-                    loading.querySelector('.loading-text').textContent = `Downloading PDF: ${pct}%…`;
-                } else {
-                    loading.querySelector('.loading-text').textContent = `Downloading PDF… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
-                }
-            });
-
-            loading.querySelector('.loading-text').textContent = 'Opening PDF…';
-
-            const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+            const loadingTask = pdfjsLib.getDocument({ url: FILE_URL, withCredentials: false });
             const pdf = await loadingTask.promise;
 
             loading.classList.add('hidden');
             progressWrap.style.display = 'flex';
 
             const totalPages = pdf.numPages;
-            let currentPdfPage = 1;
+            let renderedPages = 0;
 
-            async function renderPdfPage(pageNum) {
-                pdfViewer.innerHTML = '';
-                pdfViewer.scrollTop = 0;
-
-                const page = await pdf.getPage(pageNum);
+            for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                const page     = await pdf.getPage(pageNum);
                 const viewport = page.getViewport({ scale: 1.6 });
-
-                const canvas = document.createElement('canvas');
-                canvas.width  = viewport.width;
-                canvas.height = viewport.height;
+                const canvas   = document.createElement('canvas');
+                canvas.width   = viewport.width;
+                canvas.height  = viewport.height;
                 canvas.style.width  = '100%';
                 canvas.style.height = 'auto';
 
@@ -752,81 +606,42 @@
                 wrap.appendChild(canvas);
                 pdfViewer.appendChild(wrap);
 
-                await page.render({
-                    canvasContext: canvas.getContext('2d'),
-                    viewport
-                }).promise;
-
-                const pct = Math.round((pageNum / totalPages) * 100);
-                progressBar.style.width  = pct + '%';
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+                renderedPages++;
+                progressBar.style.width  = Math.round((renderedPages / totalPages) * 100) + '%';
                 progressText.textContent = `${pageNum} / ${totalPages}`;
             }
 
-            // Render first page initially
-            await renderPdfPage(currentPdfPage);
-
-            // PDF nav: switch page
-            prevBtn.addEventListener('click', () => {
-                if (currentPdfPage > 1) {
-                    currentPdfPage--;
-                    renderPdfPage(currentPdfPage);
-                }
-            });
-            nextBtn.addEventListener('click', () => {
-                if (currentPdfPage < totalPages) {
-                    currentPdfPage++;
-                    renderPdfPage(currentPdfPage);
-                }
-            });
+            prevBtn.addEventListener('click', () => pdfViewer.scrollBy({ top: -window.innerHeight * 0.8, behavior: 'smooth' }));
+            nextBtn.addEventListener('click', () => pdfViewer.scrollBy({ top:  window.innerHeight * 0.8, behavior: 'smooth' }));
+            prevBtn.style.position = 'fixed'; prevBtn.style.left  = '12px';
+            nextBtn.style.position = 'fixed'; nextBtn.style.right = '12px';
         } catch (err) {
             showError('Could not render PDF: ' + (err && err.message ? err.message : 'Unknown error') + '. Try downloading the file.');
         }
     }
 
-    /* ── Keyboard navigation ──────────────────────── */
-    document.addEventListener('keydown', e => {
-        if (FILE_TYPE === 'epub') {
-            if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
-            if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
-        } else {
-            if (e.key === 'ArrowLeft')  prevBtn.click();
-            if (e.key === 'ArrowRight') nextBtn.click();
-        }
-        if (e.key === 't' || e.key === 'T') sidebar.classList.toggle('hidden');
-    });
-
-    /* ─────────────────────────────────────────────── */
-    /*  COMIC BOOK CBZ LOADING                         */
-    /* ─────────────────────────────────────────────── */
+    /* ── Comic (CBZ only) ─────────────────────────── */
     async function loadComic() {
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'flex';
-        hideNonEpubControls();
 
-        // Dynamically load JSZip
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        const script  = document.createElement('script');
+        script.src    = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
+        script.integrity    = 'sha512-XMVd28F1oH/O71fzwBnV7HucLxVwtxf26XV8P4wPk26EDxuGZ91N8bsOttmnomcCD3CS5ZMRL50H0GgOHvegtg==';
+        script.crossOrigin  = 'anonymous';
         document.head.appendChild(script);
-
-        await new Promise((resolve) => {
-            script.onload = resolve;
+        await new Promise((resolve, reject) => {
+            script.onload  = resolve;
+            script.onerror = () => reject(new Error('JSZip failed to load'));
         });
 
         try {
-            const arrayBuffer = await fetchWithProgress(FILE_URL, (pct, loaded) => {
-                if (pct !== null) {
-                    loading.querySelector('.loading-text').textContent = `Downloading Comic: ${pct}%…`;
-                } else {
-                    loading.querySelector('.loading-text').textContent = `Downloading Comic… (${(loaded / 1024 / 1024).toFixed(1)} MB)`;
-                }
-            });
+            const response    = await fetch(FILE_URL);
+            const arrayBuffer = await response.arrayBuffer();
+            const zip         = await JSZip.loadAsync(arrayBuffer);
 
-            loading.querySelector('.loading-text').textContent = 'Opening Comic…';
-
-            const zip = await JSZip.loadAsync(arrayBuffer);
-
-            // Find all image files
             const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'];
             const imageFiles = [];
             zip.forEach((relativePath, zipEntry) => {
@@ -835,96 +650,78 @@
                     imageFiles.push(zipEntry);
                 }
             });
-
-            // Sort alphabetically to maintain correct page order
             imageFiles.sort((a, b) => a.name.localeCompare(b.name));
 
             if (imageFiles.length === 0) {
-                throw new Error("No readable images found in the archive.");
+                throw new Error('No readable images found in the archive.');
             }
 
             loading.classList.add('hidden');
             progressWrap.style.display = 'flex';
 
             const totalPages = imageFiles.length;
-            let currentComicPage = 1;
-
-            async function renderComicPage(pageNum) {
-                pdfViewer.innerHTML = '';
-                pdfViewer.scrollTop = 0;
-
-                const file = imageFiles[pageNum - 1];
-                const base64Data = await file.async("base64");
-                const mimeType = file.name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+            for (let i = 0; i < totalPages; i++) {
+                const file     = imageFiles[i];
+                const base64   = await file.async('base64');
+                const mimeType = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
 
                 const img = document.createElement('img');
-                img.src = `data:${mimeType};base64,${base64Data}`;
-                img.style.width = '100%';
-                img.style.height = 'auto';
-                img.style.display = 'block';
+                img.src   = `data:${mimeType};base64,${base64}`;
+                img.style.cssText = 'width:100%;height:auto;display:block;';
 
                 const wrap = document.createElement('div');
-                wrap.className = 'pdf-page-wrap';
-                wrap.style.maxWidth = '800px'; // optimal comic width
+                wrap.className     = 'pdf-page-wrap';
+                wrap.style.maxWidth = '800px';
                 wrap.appendChild(img);
                 pdfViewer.appendChild(wrap);
 
-                const pct = Math.round((pageNum / totalPages) * 100);
-                progressBar.style.width = pct + '%';
-                progressText.textContent = `${pageNum} / ${totalPages}`;
+                progressBar.style.width  = Math.round(((i + 1) / totalPages) * 100) + '%';
+                progressText.textContent = `${i + 1} / ${totalPages}`;
             }
 
-            // Render first page initially
-            await renderComicPage(currentComicPage);
-
-            // Comic nav: switch page
-            prevBtn.addEventListener('click', () => {
-                if (currentComicPage > 1) {
-                    currentComicPage--;
-                    renderComicPage(currentComicPage);
-                }
-            });
-            nextBtn.addEventListener('click', () => {
-                if (currentComicPage < totalPages) {
-                    currentComicPage++;
-                    renderComicPage(currentComicPage);
-                }
-            });
-
+            prevBtn.addEventListener('click', () => pdfViewer.scrollBy({ top: -window.innerHeight * 0.8, behavior: 'smooth' }));
+            nextBtn.addEventListener('click', () => pdfViewer.scrollBy({ top:  window.innerHeight * 0.8, behavior: 'smooth' }));
+            prevBtn.style.position = 'fixed'; prevBtn.style.left  = '12px';
+            nextBtn.style.position = 'fixed'; nextBtn.style.right = '12px';
         } catch (err) {
             showError('Could not render CBZ archive: ' + err.message + '. Try downloading the file.');
         }
     }
 
-    /* ─────────────────────────────────────────────── */
-    /*  OFFLINE EBOOK READY                            */
-    /* ─────────────────────────────────────────────── */
-    function loadOfflineMessage() {
+    /* ── Offline / unsupported ────────────────────── */
+    function loadOfflineMessage(customMsg) {
         epubViewer.style.display    = 'none';
         fontSizeBar.style.display   = 'none';
         pdfViewer.style.display     = 'none';
-        hideNonEpubControls();
-        
-        showError('This book is optimized for offline reading. Press Download to enjoy it in your favourite ebook reader application.');
-        
-        // Custom styling for offline view
-        errorScreen.querySelector('.error-icon').textContent = '📚';
+
+        const msg = customMsg ||
+            'This book is optimised for offline reading. Press Download to open it in your favourite ebook reader app.';
+        showError(msg);
+        errorScreen.querySelector('.error-icon').textContent  = '📚';
         errorScreen.querySelector('.error-title').textContent = 'Offline Ebook Ready';
     }
 
-    /* ─────────────────────────────────────────────── */
-    /*  DISPATCH                                       */
-    /* ─────────────────────────────────────────────── */
-    if (FILE_TYPE === 'epub') {
-        loadEpub();
-    } else if (FILE_TYPE === 'pdf') {
-        loadPdf();
-    } else if (FILE_TYPE === 'comic') {
-        loadComic();
-    } else if (FILE_TYPE === 'offline') {
-        loadOfflineMessage();
-    } else {
-        showError('This file type (' + FILE_TYPE + ') is not supported for inline viewing.');
+    /* ── Keyboard navigation ─────────────────────── */
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
+        if (e.key === 't' || e.key === 'T') sidebar.classList.toggle('hidden');
+    });
+
+    /* ── Dispatch ────────────────────────────────── */
+    switch (FILE_TYPE) {
+        case 'epub':    loadEpub();  break;
+        case 'pdf':     loadPdf();   break;
+        case 'comic':   loadComic(); break;
+        // CBR is RAR-compressed — JSZip cannot open it.
+        // Serve a friendly download prompt rather than a broken viewer.
+        case 'offline':
+        default:
+            loadOfflineMessage(
+                FILE_TYPE === 'offline'
+                    ? undefined
+                    : `The .${FILE_NAME.split('.').pop()} format is not supported for inline viewing.`
+            );
     }
 })();
 </script>

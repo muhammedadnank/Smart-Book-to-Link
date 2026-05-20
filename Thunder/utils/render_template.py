@@ -8,7 +8,7 @@ from pyrogram.errors import FloodWait
 
 from Thunder.bot import StreamBot
 from Thunder.server.exceptions import InvalidHash
-from Thunder.utils.file_properties import get_fname, get_uniqid, get_file_category
+from Thunder.utils.file_properties import get_fname, get_media, get_uniqid, get_file_category
 from Thunder.utils.logger import logger
 from Thunder.vars import Var
 
@@ -21,17 +21,17 @@ template_env = Environment(
     optimized=True
 )
 
-# MIME types that map to ebook viewer
+# MIME types that map to the ebook viewer
 _EBOOK_MIME_MAP: dict[str, str] = {
-    "application/epub+zip":                  "epub",
-    "application/epub":                      "epub",
-    "application/x-epub":                    "epub",
-    "application/pdf":                       "pdf",
-    "application/x-pdf":                     "pdf",
-    "application/acrobat":                   "pdf",
-    "application/vnd.pdf":                   "pdf",
-    "text/pdf":                              "pdf",
-    "text/x-pdf":                            "pdf",
+    "application/epub+zip": "epub",
+    "application/epub":     "epub",
+    "application/x-epub":   "epub",
+    "application/pdf":      "pdf",
+    "application/x-pdf":    "pdf",
+    "application/acrobat":  "pdf",
+    "application/vnd.pdf":  "pdf",
+    "text/pdf":             "pdf",
+    "text/x-pdf":           "pdf",
 }
 
 # Extension fallback map
@@ -47,16 +47,14 @@ def _get_ebook_type(file_name: str, mime_type: str | None = None) -> str | None:
 
     Detection order (most reliable first):
       1. MIME type — works even when Telegram strips the file extension.
-      2. File extension — fallback for files where mime_type is absent or generic.
+      2. File extension — fallback when mime_type is absent or generic.
     """
-    # 1. MIME type (normalised to lower-case, stripped of parameters like "; charset=utf-8")
     if mime_type:
         base_mime = mime_type.split(";")[0].strip().lower()
         ebook_type = _EBOOK_MIME_MAP.get(base_mime)
         if ebook_type:
             return ebook_type
 
-    # 2. File extension
     lower = (file_name or "").lower()
     for ext, ebook_type in _EBOOK_EXT_MAP.items():
         if lower.endswith(ext):
@@ -79,71 +77,73 @@ async def render_media_page(
 
     if requested_action != 'stream' or category in ('archives', 'documents'):
         template = template_env.get_template('dl.html')
-        context = {
-            'file_name': file_name,
-            'src': src
-        }
-        return await template.render_async(**context)
+        return await template.render_async(file_name=file_name, src=src)
 
     if category == 'ebooks':
         if not ebook_type:
             lower_name = file_name.lower()
             if lower_name.endswith('.cbz') or lower_name.endswith('.cbr'):
-                ebook_type = 'comic'
+                # CBR is RAR-compressed; JSZip cannot open it — fall back to
+                # the offline message so the user downloads it instead of
+                # seeing a broken comic viewer.
+                ebook_type = 'comic' if lower_name.endswith('.cbz') else 'offline'
             else:
                 ebook_type = 'offline'
 
         template = template_env.get_template('ebook.html')
-        context = {
-            'file_name': file_name,
-            'src': f"{src}?disposition=inline",
-            'file_type': ebook_type,
-        }
-        return await template.render_async(**context)
+        return await template.render_async(
+            file_name=file_name,
+            src=f"{src}?disposition=inline",
+            file_type=ebook_type,
+        )
 
     if category == 'audiobooks':
         template = template_env.get_template('req.html')
-        context = {
-            'heading': f"Listen to {file_name}",
-            'file_name': file_name,
-            'src': f"{src}?disposition=inline"
-        }
-        return await template.render_async(**context)
+        return await template.render_async(
+            heading=f"Listen to {file_name}",
+            file_name=file_name,
+            src=f"{src}?disposition=inline",
+        )
 
     template = template_env.get_template('dl.html')
-    context = {
-        'file_name': file_name,
-        'src': src
-    }
-    return await template.render_async(**context)
+    return await template.render_async(file_name=file_name, src=src)
 
 
-async def render_page(message_id: int, secure_hash: str, requested_action: str | None = None) -> str:
+async def render_page(
+    message_id: int,
+    secure_hash: str,
+    requested_action: str | None = None
+) -> str:
     try:
         try:
-            message = await StreamBot.get_messages(chat_id=int(Var.BIN_CHANNEL), message_ids=message_id)
+            message = await StreamBot.get_messages(
+                chat_id=int(Var.BIN_CHANNEL),
+                message_ids=message_id
+            )
         except FloodWait as e:
             await asyncio.sleep(e.value)
-            message = await StreamBot.get_messages(chat_id=int(Var.BIN_CHANNEL), message_ids=message_id)
+            message = await StreamBot.get_messages(
+                chat_id=int(Var.BIN_CHANNEL),
+                message_ids=message_id
+            )
 
         if not message:
             raise InvalidHash("Message not found")
 
         file_unique_id = get_uniqid(message)
-        file_name = get_fname(message)
+        file_name      = get_fname(message)
 
         if not file_unique_id or file_unique_id[:6] != secure_hash:
             raise InvalidHash("File unique ID or secure hash mismatch during rendering.")
 
-        # Extract mime_type from the media object so ebook detection works
-        # even when Telegram omits the file extension from the file name.
-        from Thunder.utils.file_properties import get_media as _get_media
-        _media = _get_media(message)
-        mime_type: str | None = getattr(_media, 'mime_type', None) if _media else None
+        # get_media is now imported at the top of this module — no inline import needed.
+        _media    = get_media(message)
+        mime_type = getattr(_media, 'mime_type', None) if _media else None
 
         quoted_filename = urllib.parse.quote(file_name.replace('/', '_'), safe="")
         src = urllib.parse.urljoin(Var.URL, f'{secure_hash}{message_id}/{quoted_filename}')
         return await render_media_page(file_name, src, requested_action, mime_type=mime_type)
+
     except Exception as e:
         logger.error(
             f"Error in render_page for message_id {message_id} and hash {secure_hash}: {e}",

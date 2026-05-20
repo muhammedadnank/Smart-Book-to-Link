@@ -1,24 +1,33 @@
 # Thunder/utils/database.py
+#
+# REQUIRES: pymongo >= 4.9  (AsyncMongoClient was added in 4.9)
+# Pinned to 4.17.0 in requirements.txt
 
 import datetime
 from typing import Any, Dict, Optional
-from pymongo import AsyncMongoClient
+
+from pymongo import AsyncMongoClient          # requires pymongo >= 4.9
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.errors import DuplicateKeyError
+
 from Thunder.vars import Var
 from Thunder.utils.logger import logger
+
 
 class Database:
     def __init__(self, uri: str, database_name: str, *args, **kwargs):
         self._client = AsyncMongoClient(uri, *args, **kwargs)
         self.db = self._client[database_name]
-        self.col: AsyncCollection = self.db.users
-        self.banned_users_col: AsyncCollection = self.db.banned_users
-        self.banned_channels_col: AsyncCollection = self.db.banned_channels
-        self.token_col: AsyncCollection = self.db.tokens
+
+        # All collections are AsyncCollection — their .find() returns an
+        # AsyncCursor which supports `async for` iteration directly.
+        self.col: AsyncCollection                  = self.db.users
+        self.banned_users_col: AsyncCollection     = self.db.banned_users
+        self.banned_channels_col: AsyncCollection  = self.db.banned_channels
+        self.token_col: AsyncCollection            = self.db.tokens
         self.authorized_users_col: AsyncCollection = self.db.authorized_users
-        self.restart_message_col: AsyncCollection = self.db.restart_message
-        self.files_col: AsyncCollection = self.db.files
+        self.restart_message_col: AsyncCollection  = self.db.restart_message
+        self.files_col: AsyncCollection            = self.db.files
         self.file_ingest_locks_col: AsyncCollection = self.db.file_ingest_locks
 
     async def _deduplicate_users(self) -> None:
@@ -67,14 +76,10 @@ class Database:
             return False
 
     def new_user(self, user_id: int) -> dict:
-        try:
-            return {
-                'id': user_id,
-                'join_date': datetime.datetime.now(datetime.timezone.utc)
-            }
-        except Exception as e:
-            logger.error(f"Error in new_user for user {user_id}: {e}", exc_info=True)
-            raise
+        return {
+            'id': user_id,
+            'join_date': datetime.datetime.now(datetime.timezone.utc)
+        }
 
     async def add_user(self, user_id: int) -> bool:
         try:
@@ -90,7 +95,6 @@ class Database:
         except Exception as e:
             logger.error(f"Error in add_user for user {user_id}: {e}", exc_info=True)
             raise
-
 
     async def is_user_exist(self, user_id: int) -> bool:
         """Read-only existence check. For user registration, use add_user() instead."""
@@ -123,11 +127,14 @@ class Database:
             logger.error(f"Error in get_regular_users_count: {e}", exc_info=True)
             return 0
 
+    # All three cursor methods return an AsyncCursor from pymongo's async
+    # driver. `async for user in cursor` works correctly with these.
     async def get_all_users(self):
         try:
             return self.col.find({})
         except Exception as e:
             logger.error(f"Error in get_all_users: {e}", exc_info=True)
+            # Return an empty cursor-like result on error
             return self.col.find({"_id": {"$exists": False}})
 
     async def get_authorized_users_cursor(self):
@@ -152,7 +159,6 @@ class Database:
         except Exception as e:
             logger.error(f"Error in delete_user for user {user_id}: {e}", exc_info=True)
             raise
-
 
     async def add_banned_user(
         self, user_id: int, banned_by: Optional[int] = None,
@@ -232,7 +238,11 @@ class Database:
             logger.error(f"Error in is_channel_banned for channel {channel_id}: {e}", exc_info=True)
             return None
 
-    async def save_main_token(self, user_id: int, token_value: str, expires_at: datetime.datetime, created_at: datetime.datetime, activated: bool) -> None:
+    async def save_main_token(
+        self, user_id: int, token_value: str,
+        expires_at: datetime.datetime, created_at: datetime.datetime,
+        activated: bool
+    ) -> None:
         try:
             await self.token_col.update_one(
                 {"user_id": user_id, "token": token_value},
@@ -240,15 +250,13 @@ class Database:
                     "expires_at": expires_at,
                     "created_at": created_at,
                     "activated": activated
-                    }
-                },
+                }},
                 upsert=True
             )
-            logger.debug(f"Saved main token {token_value} for user {user_id} with activated status {activated}.")
+            logger.debug(f"Saved token for user {user_id} (activated={activated}).")
         except Exception as e:
-            logger.error(f"Error saving main token for user {user_id}: {e}", exc_info=True)
+            logger.error(f"Error saving token for user {user_id}: {e}", exc_info=True)
             raise
-
 
     async def add_restart_message(self, message_id: int, chat_id: int) -> None:
         try:
@@ -411,9 +419,7 @@ class Database:
                             {"expires_at": {"$exists": False}}
                         ]
                     },
-                    {
-                        "$set": claim_fields
-                    },
+                    {"$set": claim_fields},
                     return_document=False
                 )
                 return bool(result)
@@ -449,5 +455,6 @@ class Database:
     async def close(self):
         if self._client:
             await self._client.close()
+
 
 db = Database(Var.DATABASE_URL, Var.NAME)

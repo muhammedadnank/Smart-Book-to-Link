@@ -1,4 +1,9 @@
 # Thunder/bot/__init__.py
+#
+# NOTE: pyrofork installs itself under the `pyrogram` namespace.
+# We import from `pyrogram` here because that is the namespace pyrofork
+# exposes at runtime. The pyrofork package must be listed in requirements.txt
+# (NOT pyrogram) to ensure the fork — not the upstream — is installed.
 
 from pyrogram import Client
 from Thunder.vars import Var
@@ -12,5 +17,5 @@ StreamBot = Client(
     workers=Var.WORKERS
 )
 
-multi_clients = {}
-work_loads = {}
+multi_clients: dict = {}
+work_loads: dict = {}
