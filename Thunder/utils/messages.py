@@ -213,12 +213,15 @@ MSG_DC_UNKNOWN = "Unknown"
 # ------ File Link Generation ------
 MSG_DM_SINGLE_PREFIX = "📬 **From {chat_title}**\n"
 MSG_LINKS = (
-    "✨ **Your Links are Ready!** ✨\n\n"
-    "> `{file_name}`\n\n"
-    "📂 **File Size:** `{file_size}`\n\n"
-    "🚀 **Download Link:**\n`{download_link}`\n\n"
-    "🖥️ **Stream Link:**\n`{stream_link}`\n\n"
-    "⌛️ **Note: Links remain active while the bot is running and the file is accessible.**"
+    "✨ **Your File Links are Ready!** ✨\n\n"
+    "📁 **File:** `{file_name}`\n"
+    "💾 **Size:** `{file_size}`\n\n"
+    "⚡ **Quick Links:**\n"
+    "• 🚀 **Direct Download:**\n"
+    "  `{download_link}`\n"
+    "• 🖥️ **Stream & Read Online:**\n"
+    "  `{stream_link}`\n\n"
+    "⌛ *Links remain active as long as the file is available on Telegram.*"
 )
 
 # =====================================================================================
@@ -237,13 +240,13 @@ MSG_COMMUNITY_CHANNEL = "📢 **{channel_title}:** 🔒 Join this channel to use
 # =====================================================================================
 
 # ------ General File Processing ------
-MSG_PROCESSING_REQUEST = "⏳ **Processing your request...**"
-MSG_PROCESSING_FILE = "⏳ **Processing your file...**"
+MSG_PROCESSING_REQUEST = "⚡ **Thunder Core:** Processing your request, please wait..."
+MSG_PROCESSING_FILE = "⏳ **Thunder Core:** Analyzing and preparing your file..."
 MSG_NEW_FILE_REQUEST = (
-    "> 👤 **Source:** [{source_info}](tg://user?id={id_})\n"
-    "> 🆔 **ID:** `{id_}`\n\n"
-    "🚀 **Download:** `{online_link}`\n\n"
-    "🖥️ **Stream:** `{stream_link}`"
+    "🔔 **New File Requested**\n\n"
+    "👤 **Requested By:** [{source_info}](tg://user?id={id_}) (`{id_}`)\n\n"
+    "🚀 **Download Link:**\n`{online_link}`\n\n"
+    "🖥️ **Stream / Read Link:**\n`{stream_link}`"
 )
 
 # ------ Batch Processing ------
@@ -312,15 +315,15 @@ MSG_RATE_LIMIT_QUEUE_FULL = (
 # =====================================================================================
 # ====== FILE TYPE DESCRIPTIONS ======
 # =====================================================================================
-MSG_FILE_TYPE_DOCUMENT = "📄 Document"
-MSG_FILE_TYPE_PHOTO = "🖼️ Photo"
-MSG_FILE_TYPE_VIDEO = "🎬 Video"
-MSG_FILE_TYPE_AUDIO = "🎵 Audio"
-MSG_FILE_TYPE_VOICE = "🎤 Voice Message"
-MSG_FILE_TYPE_STICKER = "🎨 Sticker"
-MSG_FILE_TYPE_ANIMATION = "🎞️ Animation (GIF)"
-MSG_FILE_TYPE_VIDEO_NOTE = "📹 Video Note"
-MSG_FILE_TYPE_UNKNOWN = "❓ Unknown File Type"
+MSG_FILE_TYPE_DOCUMENT = "📄 Document (PDF/EPUB/TXT/Office)"
+MSG_FILE_TYPE_PHOTO = "🖼️ Image / Photo"
+MSG_FILE_TYPE_VIDEO = "🎬 Video (MP4/MKV)"
+MSG_FILE_TYPE_AUDIO = "🎵 Audio / Music"
+MSG_FILE_TYPE_VOICE = "🎤 Voice Note"
+MSG_FILE_TYPE_STICKER = "✨ Sticker"
+MSG_FILE_TYPE_ANIMATION = "🎞️ GIF Animation"
+MSG_FILE_TYPE_VIDEO_NOTE = "📹 Video Message"
+MSG_FILE_TYPE_UNKNOWN = "❓ Unrecognized File Type"
 
 # =====================================================================================
 # ====== SYSTEM & STATUS MESSAGES ======
@@ -362,25 +365,26 @@ MSG_SPEEDTEST_RESULT = (
     "> **Country:** `{client_country}`"
 )
 MSG_SYSTEM_STATS = (
-    "📊 **System Statistics**\n\n"
-    "> System Uptime: {sys_uptime}\n"
-    "> Bot Uptime: {bot_uptime}\n\n"
-    "⚙️ **Performance:**\n"
-    "> CPU: {cpu_percent}%\n"
-    "> CPU Core: {cpu_cores}\n"
-    "> Frequency: {cpu_freq} GHz\n\n"
-    "💾 **RAM**\n"
-    "> Total: {ram_total}\n"
-    "> Used: {ram_used}\n"
-    "> Free: {ram_free}\n\n"
-    "💽 **Storage:**\n"
-    "> Disk: `{disk_percent}%`\n"
-    "> Total: `{total}`\n"
-    "> Used: `{used}`\n"
-    "> Free: `{free}`\n\n"
-    "📶 **Network:**\n"
-    "> 🔺 Upload: `{upload}`\n"
-    "> 🔻 Download: `{download}`\n"
+    "📊 **System Statistics Dashboard** 🖥️\n\n"
+    "⏱️ **Uptimes:**\n"
+    "• **System:** `{sys_uptime}`\n"
+    "• **Bot:** `{bot_uptime}`\n\n"
+    "⚙️ **Processor Performance:**\n"
+    "• **CPU Load:** `{cpu_percent}%`\n"
+    "• **Cores:** `{cpu_cores}` cores\n"
+    "• **Frequency:** `{cpu_freq} GHz`\n\n"
+    "💾 **Virtual Memory (RAM):**\n"
+    "• **Total Capacity:** `{ram_total}`\n"
+    "• **In Use:** `{ram_used}`\n"
+    "• **Available:** `{ram_free}`\n\n"
+    "💽 **Disk Storage (Workspace):**\n"
+    "• **Disk Usage:** `{disk_percent}%`\n"
+    "• **Total Size:** `{total}`\n"
+    "• **Used Space:** `{used}`\n"
+    "• **Free Space:** `{free}`\n\n"
+    "📶 **Network IO Statistics:**\n"
+    "• 🔺 **Total Transmitted:** `{upload}`\n"
+    "• 🔻 **Total Received:** `{download}`"
 )
 
 MSG_DB_STATS = "📊 **Database Statistics**\n\n> 👥 **Total Users:** `{total_users}`"
