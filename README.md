@@ -10,7 +10,7 @@
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3.13%2B-blue?style=for-the-badge&logo=python" alt="Python Version"></a>
   <a href="https://github.com/Mayuri-Chan/pyrofork"><img src="https://img.shields.io/badge/Pyrofork-red?style=for-the-badge" alt="Pyrofork"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/fyaz05/FileToLink?style=for-the-badge&color=green" alt="License"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=green" alt="License"></a>
 </p>
 
 <hr>
@@ -120,7 +120,6 @@ Copy `config_sample.env` to `config.env` and customize the variables.
 | `RATE_LIMIT_ENABLED` | Enable anti-spam rate limiting | `False` |
 | `TOKEN_ENABLED` | Enable time-limited authentication tokens | `False` |
 | `TOKEN_TTL_HOURS` | Token validity duration in hours | `24` |
-| `SHORTEN_ENABLED` | Enable URL shortening for active links | `False` |
 
 </details>
 
@@ -158,9 +157,9 @@ Copy `config_sample.env` to `config.env` and customize the variables.
 #### Docker Deployment (Recommended)
 ```bash
 # 1. Clone the project
-git clone https://github.com/adnanxpkd/Smart-Book-to-Link-project.git
-cd Smart-Book-to-Link-project
-
+git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
+cd Smart-Book-to-Link
+muhammedadnank
 # 2. Configure environment
 cp config_sample.env config.env
 nano config.env
