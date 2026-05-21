@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="120" style="border-radius: 24px; box-shadow: 0 8px 32px rgba(0,0,0,0.5)">
+  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="140" style="border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.5)">
 </p>
 
 <h1 align="center">📄 PageStream</h1>
 <p align="center">
-  <i>A premium, high-performance Telegram File-to-Link bot equipped with interactive in-browser eBook readers, atmospheric audiobooks player, and direct media streaming.</i>
+  <i>A premium, high-performance Telegram File-to-Link bot equipped with interactive in-browser eBook readers, an atmospheric audiobook/music player, and direct media streaming.</i>
 </p>
 
 <p align="center">
@@ -17,15 +17,15 @@
 
 ---
 
-### 🌟 Key Features
+## 🌟 Key Features
 
-*   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser.
-*   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music, complete with interactive vinyl animations and responsive controls.
-*   **⚡ High Performance Engine**: Powered by asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, and optimized streaming buffers.
+*   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser—all powered by a fast, modular **Jinja2 template architecture**.
+*   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music powered by **Vidstack**. Complete with interactive vinyl animations, a responsive mini-player (PiP), external app routing, and dynamic mobile-optimized UI.
+*   **⚡ High-Performance Engine**: Built on asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, and optimized streaming buffers.
 *   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
 *   **🛡️ Web Control Panel**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
 *   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
-*   **🎨 Premium UI/UX**: Includes dynamic colored inline buttons via Kurigram, responsive web templates built with Jinja2 modular partials, and smart fallbacks for offline content.
+*   **🎨 Premium UI/UX**: Includes dynamic colored inline buttons via Kurigram, responsive web templates, smooth Houdini CSS animations, and smart fallbacks for offline content.
 
 ---
 
@@ -36,19 +36,13 @@
 3. [Supported Formats](#supported-formats)
 4. [Advanced Media Viewers](#advanced-media-viewers)
 5. [Configuration Guide](#configuration-guide)
-    * [Essential Variables](#essential-variables)
-    * [Optional Variables](#optional-variables)
 6. [Commands Reference](#commands-reference)
 7. [Deployment Guide](#deployment-guide)
-    * [Render (One-Click)](#-render-one-click)
-    * [Docker](#-docker)
-    * [Manual / Virtualenv](#-manual--virtualenv)
 8. [Tech Stack](#tech-stack)
-9. [License](#license)
 
 ---
 
-## About The Project
+## 📖 About The Project
 
 **PageStream** transforms your Telegram document uploads into clean, high-speed HTTP(S) streamable links. By heavily leveraging modern browser APIs, the bot serves as an entire library management system—allowing users to read eBooks, manga, and listen to audiobooks instantly across all devices without requiring third-party applications.
 
@@ -57,16 +51,16 @@
 | Audience | Use Case |
 | :--- | :--- |
 | **📖 E-Readers & Manga Fans** | Read standard books (EPUB, PDF, FB2, TXT, DjVu) or Manga (CBZ) right in Safari/Chrome. |
-| **🎧 Audiobook Listeners** | Stream massive audiobook files with speed/pitch controls and background play. |
+| **🎧 Audiobook Listeners** | Stream massive audiobook files with speed/pitch controls, mini-player support, and background play. |
 | **📁 Archival Channels** | Create custom link hubs for community courses, files, and documents. |
 | **🚀 Power Users** | Bypass Telegram's strict local download limitations and stream files concurrently. |
 
 ---
 
-## How It Works
+## ⚙️ How It Works
 
 ```
-User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Returns color-coded streaming link
+User Uploads File → Bot Validates Format → Forwards to BIN_CHANNEL → Returns Streaming Link
 ```
 
 1.  **Format Validation**: Files are checked on-the-fly. Unsupported extensions are instantly rejected with clean visual cards.
@@ -75,10 +69,10 @@ User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Retur
 
 ---
 
-## Supported Formats
+## 📂 Supported Formats
 
 > [!IMPORTANT]
-> Non-supported files (executables, videos, app packages, etc.) are blocked automatically to preserve bandwidth and clean operations.
+> Non-supported files (executables, videos, app packages, etc.) are blocked automatically to preserve bandwidth and keep operations clean.
 
 | Category | File Extensions | Associated Action / Viewer |
 | :--- | :--- | :--- |
@@ -90,10 +84,10 @@ User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Retur
 
 ---
 
-## Advanced Media Viewers
+## 🎨 Advanced Media Viewers
 
 ### 📖 Modular eBook & Comic Reader (`ebook.html`)
-The reading engine dynamically loads the correct rendering module based on the file type, keeping memory footprints low.
+The reading engine dynamically loads the correct rendering module based on the file type, keeping memory footprints low. Built with a structured Jinja2 partial system (`_js_core`, `_js_pdf`, etc.) for seamless performance.
 *   **EPUBs (`epub.js`)**: Paginated text flow, Table of Contents navigation, font size adjustment, and light/dark/sepia styling.
 *   **PDFs (`pdf.js`)**: Hardware-accelerated canvas grids for crisp document rendering with responsive pinch-to-zoom.
 *   **FB2 & TXT (`DOMParser`)**: Instant custom XML parsing for Russian FB2 formats generating automatic TOCs, alongside native adjustable text viewers.
@@ -101,8 +95,10 @@ The reading engine dynamically loads the correct rendering module based on the f
 *   **CBZ Comics (`jszip`)**: Client-side extraction of CBZ archives on-the-fly, displaying images sequentially as a continuous web-comic stream.
 
 ### 🎧 Atmospheric Audio Player (`req.html`)
-*   Fully responsive audio control card featuring play, pause, seek, mute, volume, and playback speed adjustments.
-*   Vinyl records animation that spins only when audio is actively playing.
+*   Fully responsive, mobile-first audio control card featuring play, pause, seek, mute, volume, and playback speed adjustments.
+*   Powered by **Vidstack** for robust media handling and accessibility.
+*   Vinyl records animation that dynamically glows and spins only when audio is actively playing.
+*   **Mini Player (PiP)** mode for unobtrusive listening while browsing.
 *   "Open In" Drawer supporting external media applications like **VLC**, **MX Player**, **Infuse**, **PotPlayer**, and **MPV** on Android, iOS, and desktop environments.
 
 ---
@@ -119,7 +115,7 @@ PageStream includes a built-in, secure web dashboard accessible at `/admin`. Thi
 
 ---
 
-## Configuration Guide
+## 🛠️ Configuration Guide
 
 Rename `config_sample.env` to `config.env` and fill in the parameters:
 
@@ -158,7 +154,7 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 
 ---
 
-## Commands Reference
+## 🤖 Commands Reference
 
 ### 👤 User Commands
 
@@ -182,9 +178,9 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 
 ---
 
-## Deployment Guide
+## 🚀 Deployment Guide
 
-### 🚀 Render (One-Click)
+### Render (One-Click)
 
 1.  Click the deploy button:
 
@@ -238,18 +234,18 @@ python3 -m PageStream
 
 ---
 
-## Tech Stack
+## 💻 Tech Stack
 
 *   **Core MTProto Engine**: `Kurigram` (Modern Pyrogram branch) + `tgcrypto`
 *   **Web Framework**: `aiohttp` + `Jinja2` dynamic modular partials
 *   **Database Client**: `pymongo`
 *   **Event Loop**: `uvloop`
 *   **Performance Monitoring**: `psutil`
-*   **Media Readers**: `epub.js`, `pdf.js`, `jszip`, `djvu.js`, Native DOM Parsing
+*   **Media Readers**: `epub.js`, `pdf.js`, `jszip`, `djvu.js`, Native DOM Parsing, `Vidstack`
 
 ---
 
-## License
+## 📄 License
 
 Distributed under the Apache License 2.0. See [LICENSE](LICENSE) for more details.
 
