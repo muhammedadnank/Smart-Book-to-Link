@@ -3,6 +3,7 @@
 import re
 import secrets
 import time
+import datetime
 import psutil
 from urllib.parse import quote, unquote
 
@@ -540,6 +541,48 @@ async def admin_files_delete(request: web.Request):
     if result.deleted_count > 0:
         return web.json_response({"success": True})
     return web.json_response({"error": "File not found"}, status=404)
+
+@routes.post("/admin/maintenance/clear_unused_files")
+async def admin_clear_unused_files(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    # 30 days ago
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
+    result = await db.files_col.delete_many({"last_seen_at": {"$lt": cutoff}})
+    return web.json_response({"success": True, "deleted_count": result.deleted_count})
+
+@routes.post("/admin/maintenance/clear_tokens")
+async def admin_clear_tokens(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    now = datetime.datetime.now(datetime.timezone.utc)
+    result = await db.token_col.delete_many({"expires_at": {"$lt": now}})
+    return web.json_response({"success": True, "deleted_count": result.deleted_count})
+
+
+@routes.get("/admin/logs", allow_head=True)
+async def admin_logs(request: web.Request):
+    if not is_admin_session(request):
+        return web.HTTPFound("/admin/login")
+    
+    logs = ""
+    try:
+        import os
+        log_path = "PageStream.log"
+        if os.path.exists(log_path):
+            with open(log_path, "r") as f:
+                lines = f.readlines()
+                logs = "".join(lines[-100:])
+        else:
+            logs = "Log file not found."
+    except Exception as e:
+        logs = f"Error reading logs: {e}"
+        
+    template = template_env.get_template('admin/logs.html')
+    html = await template.render_async(logs=logs)
+    return web.Response(text=html, content_type="text/html")
 
 
 @routes.get(r"/{path:.+}", allow_head=True)
