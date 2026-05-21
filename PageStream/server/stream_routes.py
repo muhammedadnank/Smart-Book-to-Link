@@ -547,8 +547,8 @@ async def admin_clear_unused_files(request: web.Request):
     if not is_admin_session(request):
         return web.json_response({"error": "Unauthorized"}, status=401)
     
-    # 30 days ago
-    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=30)
+    # 5 days ago
+    cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=5)
     result = await db.files_col.delete_many({"last_seen_at": {"$lt": cutoff}})
     return web.json_response({"success": True, "deleted_count": result.deleted_count})
 

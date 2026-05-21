@@ -107,7 +107,7 @@ User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Retur
 
 PageStream includes a built-in, secure web dashboard accessible at `/admin`. This premium, mobile-responsive interface allows the owner to seamlessly manage operations without writing commands:
 *   **Live Dashboard**: Monitor real-time CPU, RAM, active clients, uptime, and database records.
-*   **File Manager & Smart Maintenance**: View all indexed files, one-click delete specific links, and run automated cleanups (clear expired tokens and files older than 30 days).
+*   **File Manager & Smart Maintenance**: View all indexed files, one-click delete specific links, and run automated cleanups (clear expired tokens and files older than 5 days).
 *   **User Management**: Instantly view the status of all registered users and manage access.
 *   **Live Server Logs**: View real-time terminal logs directly in your browser.
 
