@@ -23,21 +23,41 @@ template_env = Environment(
 
 # MIME types that map to the ebook viewer
 _EBOOK_MIME_MAP: dict[str, str] = {
-    "application/epub+zip": "epub",
-    "application/epub":     "epub",
-    "application/x-epub":   "epub",
-    "application/pdf":      "pdf",
-    "application/x-pdf":    "pdf",
-    "application/acrobat":  "pdf",
-    "application/vnd.pdf":  "pdf",
-    "text/pdf":             "pdf",
-    "text/x-pdf":           "pdf",
+    "application/epub+zip":               "epub",
+    "application/epub":                   "epub",
+    "application/x-epub":                 "epub",
+    "application/pdf":                    "pdf",
+    "application/x-pdf":                  "pdf",
+    "application/acrobat":                "pdf",
+    "application/vnd.pdf":                "pdf",
+    "text/pdf":                           "pdf",
+    "text/x-pdf":                         "pdf",
+    "text/plain":                         "txt",
+    "text/x-plain":                       "txt",
+    "application/x-fb2":                  "fb2",
+    "application/fb2":                    "fb2",
+    "text/fb2":                           "fb2",
+    "image/vnd.djvu":                     "djvu",
+    "image/x-djvu":                       "djvu",
+    "image/djvu":                         "djvu",
+    "application/x-djvu":                 "djvu",
+    "application/vnd.djvu":               "djvu",
+    "application/x-mobipocket-ebook":     "mobi",
+    "application/vnd.amazon.ebook":       "mobi",
 }
 
 # Extension fallback map
 _EBOOK_EXT_MAP: dict[str, str] = {
     ".epub": "epub",
     ".pdf":  "pdf",
+    ".txt":  "txt",
+    ".fb2":  "fb2",
+    ".djvu": "djvu",
+    ".djv":  "djvu",
+    ".mobi": "mobi",
+    ".azw":  "mobi",
+    ".azw3": "mobi",
+    ".lit":  "offline",
 }
 
 
@@ -82,11 +102,10 @@ async def render_media_page(
     if category == 'ebooks':
         if not ebook_type:
             lower_name = file_name.lower()
-            if lower_name.endswith('.cbz') or lower_name.endswith('.cbr'):
-                # CBR is RAR-compressed; JSZip cannot open it — fall back to
-                # the offline message so the user downloads it instead of
-                # seeing a broken comic viewer.
-                ebook_type = 'comic' if lower_name.endswith('.cbz') else 'offline'
+            if lower_name.endswith('.cbz'):
+                ebook_type = 'comic'
+            elif lower_name.endswith('.cbr'):
+                ebook_type = 'cbr'
             else:
                 ebook_type = 'offline'
 
