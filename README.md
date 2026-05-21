@@ -23,6 +23,7 @@
 *   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music, complete with interactive vinyl animations and responsive controls.
 *   **⚡ High Performance**: Powered by asynchronous Python (`aiohttp` + `pyrofork`), utilizing connection pooling, indexed database queries, and optimized buffers.
 *   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
+*   **🛡️ Web Control Panel**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
 *   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
 *   **🔁 Batch Generation**: Generate up to N streaming links concurrently in a single command.
 
@@ -102,6 +103,18 @@ User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Retur
 
 ---
 
+## 🛡️ Web Control Panel
+
+PageStream includes a built-in, secure web dashboard accessible at `/admin`. This premium, mobile-responsive interface allows the owner to seamlessly manage operations without writing commands:
+*   **Live Dashboard**: Monitor real-time CPU, RAM, active clients, uptime, and database records.
+*   **File Manager & Smart Maintenance**: View all indexed files, one-click delete specific links, and run automated cleanups (clear expired tokens and files older than 30 days).
+*   **User Management**: Instantly view the status of all registered users and manage access.
+*   **Live Server Logs**: View real-time terminal logs directly in your browser.
+
+*Note: Access to the dashboard is protected by a session cookie and requires the `ADMIN_PASSWORD` defined in your environment variables.*
+
+---
+
 ## Configuration Guide
 
 Rename `config_sample.env` to `config.env` and fill in the parameters:
@@ -133,6 +146,7 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 | `TOKEN_TTL_HOURS` | Duration in hours before a token expires | `24` |
 | `SLEEP_THRESHOLD` | Flood wait threshold in seconds | `600` |
 | `WORKERS` | Max asynchronous event loop worker threads | `8` |
+| `ADMIN_PASSWORD` | Password to access the `/admin` web control panel | `admin` |
 | `MULTI_TOKEN1` | Additional bot token to scale request handling | *(empty)* |
 | `MULTI_TOKEN2` | Second auxiliary token to scale request handling | *(empty)* |
 
