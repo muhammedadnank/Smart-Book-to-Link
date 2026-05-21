@@ -214,7 +214,7 @@
         /* ── Hero ── */
         .hero {
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             margin: 40px 0 28px;
             display: flex;
             flex-direction: column;
@@ -363,12 +363,15 @@
         /* ── Player Card ── */
         .player-card {
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             background: var(--surface-2);
             border: 1px solid var(--border);
             border-top-color: var(--border-hi);
             border-radius: var(--radius-xl);
-            padding: 24px 24px 20px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
             backdrop-filter: blur(32px) saturate(180%);
             -webkit-backdrop-filter: blur(32px) saturate(180%);
             box-shadow:
@@ -383,17 +386,80 @@
                 0 0 60px -20px var(--glow-a);
         }
 
-        /* Vidstack overrides */
+        /* ── Vidstack overrides ── */
         media-player {
+            width: 100% !important;
             height: auto !important;
             --media-background: transparent;
             --media-brand: var(--accent);
             --media-slider-track-fill-bg: var(--accent);
             --media-slider-thumb-bg: var(--accent);
             --media-focus-ring-color: var(--accent);
+            --media-controls-color: var(--text-primary);
+            --media-time-color: var(--text-secondary);
         }
+
+        /* Full-width audio layout */
+        media-audio-layout,
+        .vds-audio-layout {
+            width: 100% !important;
+        }
+
+        /* Center the controls row */
+        .vds-controls,
+        media-audio-layout .vds-controls {
+            width: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: stretch !important;
+        }
+
+        /* Controls row: center play/skip buttons */
+        .vds-controls-group,
+        .vds-audio-layout .vds-controls-group {
+            width: 100% !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
+        }
+
+        /* Time slider: full width */
+        .vds-time-slider,
+        media-time-slider {
+            width: 100% !important;
+            min-width: 0 !important;
+        }
+
+        /* Volume slider: reasonable width */
+        .vds-volume-slider,
+        media-volume-slider {
+            min-width: 80px !important;
+        }
+
+        /* Play button: larger and centered */
+        media-play-button,
+        .vds-play-button {
+            width: 52px !important;
+            height: 52px !important;
+        }
+        media-play-button svg,
+        .vds-play-button svg {
+            width: 28px !important;
+            height: 28px !important;
+        }
+
+        /* Seek buttons */
+        media-seek-button,
+        .vds-seek-button {
+            width: 40px !important;
+            height: 40px !important;
+        }
+
         media-player button { transition: transform 0.2s ease !important; }
-        media-player button:hover { transform: scale(1.12); }
+        media-player button:hover { transform: scale(1.1); }
+
+        /* Hide artwork/poster/title — we have our own */
         media-player::part(artwork),
         media-player::part(poster),
         media-audio-layout::part(artwork),
@@ -403,6 +469,11 @@
         media-audio-layout::part(chapter-title),
         .vds-title, .vds-chapter-title { display: none !important; }
         .player-background-message { display: none !important; }
+
+        /* Settings menu: keep but style */
+        .vds-menu-button { opacity: 0.6; }
+        .vds-menu-button:hover { opacity: 1; }
+
         #metaResolution { display: none !important; }
 
         /* ── Waveform Bars (decoration) ── */
@@ -446,7 +517,7 @@
         /* ── Actions Bar ── */
         .actions-bar {
             width: 100%;
-            max-width: 480px;
+            max-width: 520px;
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
@@ -493,7 +564,7 @@
         }
 
         /* ── "Open In" Drawer ── */
-        .drawer-wrap { width: 100%; max-width: 480px; }
+        .drawer-wrap { width: 100%; max-width: 520px; }
         .drawer-panel {
             overflow: hidden;
             max-height: 0;
