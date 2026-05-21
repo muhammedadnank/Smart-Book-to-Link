@@ -212,12 +212,16 @@
 
         .player-container {
             width: 100%;
+            margin-top: 8px;
         }
 
         /* Vidstack audio layout styling customization */
         media-player {
             height: auto !important;
             --media-background: transparent;
+            --media-brand: var(--ember);
+            --media-slider-track-fill-bg: var(--ember);
+            --media-slider-thumb-bg: var(--ember);
         }
 
         /* Hide the huge default headphone artwork placeholder */
@@ -227,6 +231,14 @@
         media-audio-layout::part(poster),
         .vds-artwork,
         .vds-poster {
+            display: none !important;
+        }
+
+        /* Hide redundant title in audio layout (it's already in the masthead) */
+        media-audio-layout::part(title),
+        media-audio-layout::part(chapter-title),
+        .vds-title,
+        .vds-chapter-title {
             display: none !important;
         }
 
