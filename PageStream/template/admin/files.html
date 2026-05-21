@@ -1,444 +1,211 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Files - Admin</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121e;
-            --accent-glow: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 100%);
-            --accent-purple: #a855f7;
-            --accent-blue: #6366f1;
-            --text-primary: #f3f4f6;
-            --text-secondary: #9ca3af;
-            --glass-bg: rgba(18, 18, 30, 0.75);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --glass-highlight: rgba(255, 255, 255, 0.08);
-        }
+{% extends "admin/base.html" %}
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+{% block title %}Manage Files{% endblock %}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            line-height: 1.6;
-        }
+{% block extra_styles %}
+.file-name {
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+.action-btns { display: flex; gap: 10px; align-items: center; }
+.icon-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    display: inline-flex;
+    padding: 4px;
+    border-radius: 6px;
+}
+.icon-btn:hover { color: var(--text-primary); }
+.icon-btn.delete:hover { color: #ef4444; }
+.icon-btn.view:hover { color: var(--accent-blue); }
+.icon-btn:focus-visible {
+    outline: 2px solid var(--accent-purple);
+    outline-offset: 2px;
+}
+.maintenance-card {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+.maintenance-card h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; }
+.maintenance-card p { color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; }
+.maintenance-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+.btn-warn {
+    background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.25rem;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-warn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(239,68,68,0.3); }
+.btn-warn:focus-visible, .btn-primary:focus-visible {
+    outline: 2px solid var(--accent-purple);
+    outline-offset: 2px;
+}
+{% endblock %}
 
-        h1, h2, h3, .brand { font-family: 'Outfit', sans-serif; }
+{% block content %}
+<div class="maintenance-card">
+    <h2><i class="fa-solid fa-broom" aria-hidden="true"></i> Smart Maintenance</h2>
+    <p>Free up server space and database capacity by clearing out unused files and expired tokens.</p>
+    <div class="maintenance-btns">
+        <button onclick="clearUnusedFiles()" class="btn-warn">
+            <i class="fa-solid fa-trash-can" aria-hidden="true"></i> Delete Unused Files (&gt;5 days)
+        </button>
+        <button onclick="clearTokens()" class="btn-primary">
+            <i class="fa-solid fa-key" aria-hidden="true"></i> Clear Expired Tokens
+        </button>
+    </div>
+</div>
 
-        .ambient-glow {
-            position: fixed;
-            width: 600px;
-            height: 600px;
-            background: var(--accent-glow);
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-        }
-        .glow-1 { top: -200px; right: -200px; }
-        .glow-2 { bottom: -200px; left: -200px; }
+<div class="page-header">
+    <h1>Manage Files</h1>
+    <form action="/admin/files" method="get" class="search-form" role="search">
+        <label for="file-search" class="sr-only">Search files</label>
+        <input
+            type="text"
+            id="file-search"
+            name="q"
+            value="{{ query or '' }}"
+            placeholder="Search by name or hash…"
+            class="search-input"
+            aria-label="Search files by name or hash"
+        >
+        <button type="submit" class="btn-primary" aria-label="Search">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+        </button>
+    </form>
+</div>
 
-        nav {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(10, 10, 15, 0.85);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 0.9rem 1.5rem;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
+<div class="glass-card">
+    <div class="table-responsive">
+        <table aria-label="Files list">
+            <thead>
+                <tr>
+                    <th scope="col">Filename</th>
+                    <th scope="col">Size</th>
+                    <th scope="col">Views</th>
+                    <th scope="col">Created At</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for file in files %}
+                <tr>
+                    <td>
+                        <div class="file-name" title="{{ file.file_name }}">{{ file.file_name }}</div>
+                    </td>
+                    <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                        {{ (file.file_size / (1024*1024))|round(2) }} MB
+                    </td>
+                    <td>{{ file.seen_count or 0 }}</td>
+                    <td style="color: var(--text-secondary); font-size: 0.9rem;">
+                        {{ file.created_at.strftime('%Y-%m-%d %H:%M') if file.created_at else 'Unknown' }}
+                    </td>
+                    <td>
+                        <div class="action-btns">
+                            {# Fixed: use canonical watch route with full hash #}
+                            <a
+                                href="/watch/f/{{ file.public_hash }}/{{ file.file_name | urlencode }}"
+                                target="_blank"
+                                class="icon-btn view"
+                                title="Stream file"
+                                aria-label="Stream {{ file.file_name }}"
+                            >
+                                <i class="fa-solid fa-external-link-alt" aria-hidden="true"></i>
+                            </a>
+                            <button
+                                onclick="deleteFile('{{ file.public_hash }}')"
+                                class="icon-btn delete"
+                                title="Delete file record"
+                                aria-label="Delete {{ file.file_name }}"
+                            >
+                                <i class="fa-solid fa-trash" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 3rem 1rem;">
+                        No files found matching your criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
 
-        .nav-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+{% block scripts %}
+<script>
+async function deleteFile(hash) {
+    if (!confirm('Are you sure you want to delete this file record?')) return;
+    try {
+        const response = await fetch(`/admin/files/delete/${hash}`, { method: 'POST' });
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            const data = await response.json().catch(() => ({}));
+            alert(data.error || 'Failed to delete file');
         }
+    } catch (err) {
+        alert('An error occurred');
+    }
+}
 
-        .brand {
-            font-size: 1.3rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            background: linear-gradient(135deg, var(--text-primary) 30%, #a855f7 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+async function clearUnusedFiles() {
+    if (!confirm('Delete all files not viewed in over 5 days?')) return;
+    try {
+        const response = await fetch('/admin/maintenance/clear_unused_files', { method: 'POST' });
+        const data = await response.json();
+        if (response.ok) {
+            alert(`Success! Deleted ${data.deleted_count} unused files.`);
+            window.location.reload();
+        } else {
+            alert(data.error || 'Failed to clear unused files');
         }
-        .brand i { color: var(--accent-purple); -webkit-text-fill-color: initial; }
+    } catch (err) {
+        alert('An error occurred');
+    }
+}
 
-        .nav-links {
-            display: flex;
-            gap: 1rem;
-            align-items: center;
+async function clearTokens() {
+    if (!confirm('Delete all expired user tokens?')) return;
+    try {
+        const response = await fetch('/admin/maintenance/clear_tokens', { method: 'POST' });
+        const data = await response.json();
+        if (response.ok) {
+            alert(`Success! Cleared ${data.deleted_count} expired tokens.`);
+        } else {
+            alert(data.error || 'Failed to clear tokens');
         }
-
-        .nav-btn {
-            text-decoration: none;
-            color: var(--text-primary);
-            font-weight: 600;
-            font-size: 0.875rem;
-            padding: 0.5rem 1rem;
-            border-radius: 12px;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-        }
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
-            border-color: var(--glass-highlight);
-            transform: translateY(-2px);
-        }
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #fca5a5;
-        }
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.2);
-            border-color: rgba(239, 68, 68, 0.4);
-            transform: translateY(-2px);
-        }
-
-        main {
-            flex: 1;
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 2.5rem 1.5rem;
-            z-index: 10;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .page-header h1 {
-            font-size: 2.25rem;
-            font-weight: 800;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .search-input {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 0.6rem 1rem;
-            color: var(--text-primary);
-            font-family: inherit;
-            outline: none;
-            width: 250px;
-        }
-
-        .search-input:focus {
-            border-color: var(--accent-purple);
-            background: rgba(255, 255, 255, 0.06);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-            color: white;
-            border: none;
-            padding: 0.6rem 1.25rem;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(168, 85, 247, 0.3);
-        }
-
-        .glass-card {
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            min-width: 800px;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 1.25rem 1rem;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        th {
-            font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            letter-spacing: 0.5px;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .file-name {
-            font-weight: 500;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 300px;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .icon-btn {
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.2s ease;
-            text-decoration: none;
-            display: inline-flex;
-        }
-
-        .icon-btn:hover {
-            color: var(--text-primary);
-        }
-
-        .icon-btn.delete:hover {
-            color: #ef4444;
-        }
-
-        .icon-btn.view:hover {
-            color: var(--accent-blue);
-        }
-
-        footer {
-            border-top: 1px solid var(--glass-border);
-            padding: 1.5rem;
-            text-align: center;
-            background: #06060a;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            margin-top: auto;
-        }
-        /* --- Responsive Design --- */
-        @media (max-width: 800px) {
-            .nav-container { flex-direction: column; gap: 1rem; }
-            .nav-links { flex-wrap: wrap; justify-content: center; }
-            main { padding: 1.5rem 1rem; }
-            .page-header h1 { font-size: 1.75rem; }
-            .stats-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .dashboard-sections { grid-template-columns: 1fr; }
-            .glass-card { padding: 1.25rem; }
-            .search-form { width: 100%; }
-            .search-input { width: 100%; flex: 1; }
-        }
-        @media (max-width: 480px) {
-            .brand { font-size: 1.1rem; }
-            .brand span { display: none; }
-            .nav-container { flex-direction: row; justify-content: space-between; gap: 0.5rem; }
-            .nav-links { gap: 0.4rem; }
-            .nav-btn { font-size: 0.8rem; padding: 0.4rem 0.6rem; }
-            th, td { padding: 1rem 0.5rem; font-size: 0.85rem; }
-            .action-btns { flex-direction: column; gap: 5px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
-
-    <nav>
-        <div class="nav-container">
-            <div class="brand">
-                <i class="fa-solid fa-book-open-reader"></i>
-                <span>PageStream Admin</span>
-            </div>
-            <div class="nav-links">
-                <a href="/admin" class="nav-btn btn-secondary">
-                    <i class="fa-solid fa-chart-pie"></i> Dashboard
-                </a>
-                <a href="/admin/users" class="nav-btn btn-secondary">
-                    <i class="fa-solid fa-users-gear"></i> Users
-                </a>
-                <a href="/admin/logout" class="nav-btn btn-danger">
-                    <i class="fa-solid fa-right-from-bracket"></i> Logout
-                </a>
-            </div>
-        </div>
-    </nav>
-
-    <main>
-        <div class="glass-card" style="margin-bottom: 2rem;">
-            <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem;"><i class="fa-solid fa-broom"></i> Smart Maintenance</h2>
-            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem;">Free up server space and database capacity by clearing out unused files and expired tokens.</p>
-            <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-                <button onclick="clearUnusedFiles()" class="btn-primary" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
-                    <i class="fa-solid fa-trash-can"></i> Delete Unused Files (>5 days)
-                </button>
-                <button onclick="clearTokens()" class="btn-primary" style="background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);">
-                    <i class="fa-solid fa-key"></i> Clear Expired Tokens
-                </button>
-            </div>
-        </div>
-
-        <div class="page-header">
-            <h1>Manage Files</h1>
-            <form action="/admin/files" method="get" class="search-form">
-                <input type="text" name="q" value="{{ query or '' }}" placeholder="Search by name or hash..." class="search-input">
-                <button type="submit" class="btn-primary"><i class="fa-solid fa-magnifying-glass"></i></button>
-            </form>
-        </div>
-
-        <div class="glass-card">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Filename</th>
-                            <th>Size</th>
-                            <th>Views</th>
-                            <th>Created At</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for file in files %}
-                        <tr>
-                            <td>
-                                <div class="file-name" title="{{ file.file_name }}">{{ file.file_name }}</div>
-                            </td>
-                            <td style="color: var(--text-secondary); font-size: 0.9rem;">
-                                {{ (file.file_size / (1024*1024))|round(2) }} MB
-                            </td>
-                            <td>
-                                {{ file.seen_count or 0 }}
-                            </td>
-                            <td style="color: var(--text-secondary); font-size: 0.9rem;">
-                                {{ file.created_at.strftime('%Y-%m-%d %H:%M') if file.created_at else 'Unknown' }}
-                            </td>
-                            <td>
-                                <div class="action-btns">
-                                    <a href="/{{ file.public_hash[:6] }}{{ file.canonical_message_id }}" target="_blank" class="icon-btn view" title="View Stream">
-                                        <i class="fa-solid fa-external-link-alt"></i>
-                                    </a>
-                                    <button onclick="deleteFile('{{ file.public_hash }}')" class="icon-btn delete" title="Delete File">
-                                        <i class="fa-solid fa-trash"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-secondary); padding: 3rem 1rem;">
-                                No files found matching your criteria.
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <p>© 2026 PageStream. Powered by <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank" rel="noopener">PageStream</a>.</p>
-    </footer>
-
-    <script>
-        async function deleteFile(hash) {
-            if (!confirm('Are you sure you want to delete this file record?')) return;
-            
-            try {
-                const response = await fetch(`/admin/files/delete/${hash}`, { method: 'POST' });
-                if (response.ok) {
-                    window.location.reload();
-                } else {
-                    const data = await response.json().catch(() => ({}));
-                    alert(data.error || 'Failed to delete file');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred');
-            }
-        }
-        async function clearUnusedFiles() {
-            if (!confirm('Are you sure you want to delete all files that have not been viewed in over 5 days?')) return;
-            try {
-                const response = await fetch('/admin/maintenance/clear_unused_files', { method: 'POST' });
-                const data = await response.json();
-                if (response.ok) {
-                    alert(`Success! Deleted ${data.deleted_count} unused files.`);
-                    window.location.reload();
-                } else {
-                    alert(data.error || 'Failed to clear unused files');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred');
-            }
-        }
-
-        async function clearTokens() {
-            if (!confirm('Are you sure you want to delete all expired user tokens?')) return;
-            try {
-                const response = await fetch('/admin/maintenance/clear_tokens', { method: 'POST' });
-                const data = await response.json();
-                if (response.ok) {
-                    alert(`Success! Cleared ${data.deleted_count} expired tokens.`);
-                } else {
-                    alert(data.error || 'Failed to clear tokens');
-                }
-            } catch (err) {
-                console.error(err);
-                alert('An error occurred');
-            }
-        }
-    </script>
-</body>
-</html>
+    } catch (err) {
+        alert('An error occurred');
+    }
+}
+</script>
+{% endblock %}

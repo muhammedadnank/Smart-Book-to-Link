@@ -571,18 +571,18 @@ async def admin_logs(request: web.Request):
     logs = ""
     try:
         import os
-        log_path = "PageStream.log"
-        if os.path.exists(log_path):
-            with open(log_path, "r") as f:
+        from PageStream.utils.logger import LOG_FILE
+        if os.path.exists(LOG_FILE):
+            with open(LOG_FILE, "r", encoding="utf-8") as f:
                 lines = f.readlines()
                 logs = "".join(lines[-100:])
         else:
-            logs = "Log file not found."
+            logs = f"Log file not found at {LOG_FILE}"
     except Exception as e:
         logs = f"Error reading logs: {e}"
         
     template = template_env.get_template('admin/logs.html')
-    html = await template.render_async(logs=logs)
+    html = await template.render_async(logs=logs, log_path=os.path.basename(LOG_FILE) if 'LOG_FILE' in locals() else "Unknown")
     return web.Response(text=html, content_type="text/html")
 
 
