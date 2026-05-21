@@ -13,9 +13,9 @@
         :root {
             --bg-primary: #0a0a0f;
             --bg-secondary: #12121e;
-            --accent-glow: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.05) 50%, transparent 100%);
             --accent-purple: #a855f7;
             --accent-blue: #6366f1;
+            --accent-teal: #6ee7b7;
             --text-primary: #f3f4f6;
             --text-secondary: #9ca3af;
             --glass-bg: rgba(18, 18, 30, 0.7);
@@ -24,6 +24,8 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { scroll-behavior: smooth; }
 
         body {
             font-family: 'Inter', sans-serif;
@@ -38,29 +40,56 @@
 
         h1, h2, h3, .brand { font-family: 'Outfit', sans-serif; }
 
-        /* ── Ambient glows ────────────────────────────────── */
-        .ambient-glow {
+        /* ── Particle canvas ──────────────────────────────── */
+        #particle-canvas {
             position: fixed;
-            width: 600px;
-            height: 600px;
-            background: var(--accent-glow);
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* ── Ambient glows (parallax) ─────────────────────── */
+        .glow-orb {
+            position: fixed;
             border-radius: 50%;
             pointer-events: none;
             z-index: 0;
+            will-change: transform;
+            transition: transform 0.1s linear;
         }
-        .glow-1 { top: -200px; right: -200px; }
-        .glow-2 { bottom: -200px; left: -200px; }
+        .glow-1 {
+            width: 700px; height: 700px;
+            top: -250px; right: -250px;
+            background: radial-gradient(circle, rgba(99,102,241,0.18) 0%, rgba(168,85,247,0.06) 50%, transparent 70%);
+        }
+        .glow-2 {
+            width: 600px; height: 600px;
+            bottom: -200px; left: -200px;
+            background: radial-gradient(circle, rgba(168,85,247,0.15) 0%, rgba(99,102,241,0.04) 50%, transparent 70%);
+        }
+        .glow-3 {
+            width: 400px; height: 400px;
+            top: 40%; left: 40%;
+            background: radial-gradient(circle, rgba(110,231,183,0.06) 0%, transparent 70%);
+        }
 
         /* ── Nav ──────────────────────────────────────────── */
         nav {
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(10, 10, 15, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            background: rgba(10, 10, 15, 0.7);
             border-bottom: 1px solid var(--glass-border);
             padding: 0.9rem 1.25rem;
             position: sticky;
             top: 0;
             z-index: 100;
+            transition: padding 0.3s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        nav.scrolled {
+            padding: 0.55rem 1.25rem;
+            background: rgba(10, 10, 15, 0.95);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
         }
 
         .nav-container {
@@ -84,7 +113,9 @@
             align-items: center;
             gap: 8px;
             flex-shrink: 0;
+            transition: transform 0.3s ease;
         }
+        .brand:hover { transform: scale(1.03); }
         .brand i { color: var(--accent-purple); -webkit-text-fill-color: initial; }
 
         .nav-links {
@@ -102,27 +133,38 @@
             font-size: 0.875rem;
             padding: 0.5rem 1rem;
             border-radius: 12px;
-            transition: all 0.3s ease;
+            transition: all 0.25s cubic-bezier(0.16,1,0.3,1);
             display: inline-flex;
             align-items: center;
             gap: 6px;
             white-space: nowrap;
         }
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.03);
+            background: rgba(255,255,255,0.03);
             border: 1px solid var(--glass-border);
         }
         .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255,255,255,0.08);
             border-color: var(--glass-highlight);
             transform: translateY(-2px);
         }
         .btn-primary {
             background: linear-gradient(135deg, var(--accent-blue) 0%, var(--accent-purple) 100%);
-            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 20px rgba(99,102,241,0.35);
+            position: relative;
+            overflow: hidden;
         }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.1) 50%, transparent 100%);
+            transform: translateX(-100%);
+            transition: transform 0.4s ease;
+        }
+        .btn-primary:hover::after { transform: translateX(100%); }
         .btn-primary:hover {
-            box-shadow: 0 6px 24px rgba(99, 102, 241, 0.5);
+            box-shadow: 0 6px 28px rgba(99,102,241,0.55);
             transform: translateY(-2px);
         }
 
@@ -131,16 +173,29 @@
             position: relative;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 5rem 1.5rem 4rem;
+            padding: 6rem 1.5rem 4rem;
             text-align: center;
             z-index: 10;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
+
+        /* Fade-up animation base */
+        .reveal {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.7s cubic-bezier(0.16,1,0.3,1), transform 0.7s cubic-bezier(0.16,1,0.3,1);
+        }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.35s; }
+        .reveal-delay-4 { transition-delay: 0.5s; }
+
         .hero-badge {
-            background: rgba(168, 85, 247, 0.1);
-            border: 1px solid rgba(168, 85, 247, 0.2);
+            background: rgba(168,85,247,0.1);
+            border: 1px solid rgba(168,85,247,0.25);
             color: #d8b4fe;
             padding: 0.45rem 1.1rem;
             border-radius: 100px;
@@ -150,34 +205,228 @@
             display: inline-flex;
             align-items: center;
             gap: 7px;
+            animation: badge-pulse 3s ease-in-out infinite;
         }
+        @keyframes badge-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(168,85,247,0); }
+            50% { box-shadow: 0 0 0 6px rgba(168,85,247,0.08); }
+        }
+        .badge-dot {
+            width: 6px; height: 6px;
+            background: var(--accent-purple);
+            border-radius: 50%;
+            animation: dot-blink 1.5s ease-in-out infinite;
+        }
+        @keyframes dot-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
         .hero-title {
-            font-size: clamp(2.25rem, 6vw, 4rem);
+            font-size: clamp(2.4rem, 6.5vw, 4.5rem);
             font-weight: 800;
-            line-height: 1.15;
-            letter-spacing: -2px;
-            margin-bottom: 1.25rem;
-            max-width: 900px;
+            line-height: 1.1;
+            letter-spacing: -2.5px;
+            margin-bottom: 1.35rem;
+            max-width: 950px;
         }
+
         .gradient-text {
-            background: linear-gradient(135deg, #a855f7 0%, #6366f1 50%, #6ee7b7 100%);
+            background: linear-gradient(135deg, #a855f7 0%, #6366f1 40%, #6ee7b7 100%);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
+            background-size: 200% 200%;
+            animation: gradient-shift 5s ease infinite;
         }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Typewriter cursor */
+        .typewriter-cursor {
+            display: inline-block;
+            width: 3px;
+            height: 0.9em;
+            background: var(--accent-purple);
+            margin-left: 4px;
+            vertical-align: middle;
+            animation: cursor-blink 0.8s step-end infinite;
+            border-radius: 1px;
+        }
+        @keyframes cursor-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
         .hero-subtitle {
             font-size: clamp(1rem, 2.5vw, 1.2rem);
             color: var(--text-secondary);
             max-width: 600px;
-            margin-bottom: 2.5rem;
-            line-height: 1.7;
+            margin-bottom: 2.75rem;
+            line-height: 1.75;
         }
+
         .cta-group {
             display: flex;
             gap: 1rem;
             justify-content: center;
             flex-wrap: wrap;
             width: 100%;
+            margin-bottom: 4rem;
+        }
+        .cta-large {
+            padding: 0.95rem 1.9rem;
+            font-size: 1.05rem;
+            border-radius: 14px;
+        }
+
+        /* ── Stats row ────────────────────────────────────── */
+        .stats-row {
+            display: flex;
+            gap: 2.5rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 1.5rem 2rem;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            width: 100%;
+            max-width: 700px;
+        }
+        .stat-item { text-align: center; }
+        .stat-num {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.9rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: block;
+            line-height: 1.1;
+        }
+        .stat-label {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            margin-top: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .stat-divider {
+            width: 1px;
+            background: var(--glass-border);
+            align-self: stretch;
+        }
+
+        /* ── How it works ─────────────────────────────────── */
+        .how-section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 4rem 1.5rem;
+            z-index: 10;
+            position: relative;
+        }
+        .section-label {
+            text-align: center;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent-purple);
+            margin-bottom: 0.75rem;
+        }
+        .section-title {
+            text-align: center;
+            font-size: clamp(1.6rem, 4vw, 2.4rem);
+            font-weight: 800;
+            margin-bottom: 3rem;
+            letter-spacing: -1px;
+        }
+
+        .steps-grid {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr auto 1fr;
+            align-items: start;
+            gap: 0;
+        }
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 0 1rem;
+        }
+        .step-number {
+            width: 56px; height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: white;
+            margin-bottom: 1rem;
+            box-shadow: 0 0 0 6px rgba(99,102,241,0.12);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .step:hover .step-number {
+            transform: scale(1.1);
+            box-shadow: 0 0 0 8px rgba(99,102,241,0.2), 0 8px 24px rgba(99,102,241,0.4);
+        }
+        .step-icon {
+            position: absolute;
+            bottom: -4px; right: -4px;
+            width: 22px; height: 22px;
+            background: var(--bg-secondary);
+            border: 2px solid var(--bg-primary);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.65rem;
+            color: var(--accent-teal);
+        }
+        .step-title { font-family: 'Outfit', sans-serif; font-size: 1.05rem; font-weight: 700; margin-bottom: 0.4rem; }
+        .step-desc { color: var(--text-secondary); font-size: 0.87rem; line-height: 1.6; }
+
+        .step-connector {
+            align-self: flex-start;
+            margin-top: 27px;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            width: 100%;
+            min-width: 40px;
+        }
+        .connector-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+            position: relative;
+            overflow: hidden;
+        }
+        .connector-line::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            animation: shimmer-line 2.5s ease-in-out infinite;
+        }
+        @keyframes shimmer-line {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        .connector-arrow {
+            color: var(--accent-purple);
+            font-size: 0.7rem;
+            flex-shrink: 0;
         }
 
         /* ── Features ─────────────────────────────────────── */
@@ -185,19 +434,12 @@
             position: relative;
             max-width: 1200px;
             margin: 0 auto;
-            padding: 3rem 1.5rem;
+            padding: 2rem 1.5rem 4rem;
             z-index: 10;
-        }
-        .section-title {
-            text-align: center;
-            font-size: clamp(1.6rem, 4vw, 2.25rem);
-            font-weight: 800;
-            margin-bottom: 2.5rem;
-            letter-spacing: -1px;
         }
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
         }
         .feature-card {
@@ -205,146 +447,280 @@
             -webkit-backdrop-filter: blur(12px);
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius: 20px;
-            padding: 2rem;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-radius: 22px;
+            padding: 2.25rem;
+            transition: all 0.45s cubic-bezier(0.16,1,0.3,1);
             position: relative;
             overflow: hidden;
+            cursor: default;
         }
+        /* Animated gradient border on hover */
         .feature-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+            inset: -1px;
+            border-radius: 23px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-teal), var(--accent-blue));
+            background-size: 300% 300%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+            animation: border-rotate 4s linear infinite;
+        }
+        @keyframes border-rotate {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .feature-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 22px;
+            background: var(--glass-bg);
+            z-index: -1;
+        }
+        .feature-card:hover::before { opacity: 1; }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        /* Shimmer on card hover */
+        .card-shimmer {
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+            transition: left 0.5s ease;
             pointer-events: none;
         }
-        .feature-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(168, 85, 247, 0.3);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
-        }
-        .card-icon {
-            width: 52px; height: 52px;
-            border-radius: 14px;
-            background: rgba(99, 102, 241, 0.1);
-            display: flex; align-items: center; justify-content: center;
-            margin-bottom: 1.25rem;
-            font-size: 1.35rem;
-            color: var(--accent-blue);
-        }
-        .feature-card:nth-child(2) .card-icon { background: rgba(168, 85, 247, 0.1); color: var(--accent-purple); }
-        .feature-card:nth-child(3) .card-icon { background: rgba(110, 231, 183, 0.1); color: #6ee7b7; }
-        .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.6rem; }
-        .card-desc  { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.65; }
+        .feature-card:hover .card-shimmer { left: 150%; }
 
-        /* ── Formats table ───────────────────────────────── */
+        .card-icon {
+            width: 56px; height: 56px;
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 1.35rem;
+            font-size: 1.4rem;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover .card-icon { transform: scale(1.1) rotate(-5deg); }
+
+        .icon-blue  { background: rgba(99,102,241,0.12);  color: var(--accent-blue); }
+        .icon-purple{ background: rgba(168,85,247,0.12);  color: var(--accent-purple); }
+        .icon-teal  { background: rgba(110,231,183,0.12); color: var(--accent-teal); }
+
+        .card-glow {
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .feature-card:hover .card-glow { opacity: 1; }
+        .icon-blue  .card-glow { box-shadow: 0 0 20px rgba(99,102,241,0.4); }
+        .icon-purple .card-glow { box-shadow: 0 0 20px rgba(168,85,247,0.4); }
+        .icon-teal  .card-glow { box-shadow: 0 0 20px rgba(110,231,183,0.4); }
+
+        .card-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.65rem; }
+        .card-desc  { color: var(--text-secondary); font-size: 0.92rem; line-height: 1.7; }
+
+        .card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 1rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.04);
+            border: 1px solid var(--glass-border);
+            border-radius: 100px;
+            padding: 0.25rem 0.75rem;
+        }
+        .card-tag i { font-size: 0.7rem; }
+
+        /* ── Formats section ──────────────────────────────── */
         .formats-section {
             max-width: 1000px;
-            margin: 2rem auto 3rem;
+            margin: 0 auto 4rem;
             padding: 0 1.5rem;
             z-index: 10;
+            position: relative;
         }
-        .table-scroll {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 20px;
+
+        .formats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+        .format-card {
+            background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-        }
-        .formats-table {
-            width: 100%;
-            min-width: 500px;
-            border-collapse: collapse;
+            border-radius: 16px;
+            padding: 1.5rem;
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            background: var(--glass-bg);
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            position: relative;
+            overflow: hidden;
         }
-        .formats-table th, .formats-table td {
-            padding: 1rem 1.25rem;
-            text-align: left;
-            border-bottom: 1px solid var(--glass-border);
+        .format-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(168,85,247,0.25);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
-        .formats-table th {
+        .format-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 1rem;
+        }
+        .format-emoji { font-size: 1.4rem; }
+        .format-category {
             font-family: 'Outfit', sans-serif;
-            font-weight: 600;
-            color: var(--text-primary);
-            background: rgba(255, 255, 255, 0.02);
-            white-space: nowrap;
+            font-weight: 700;
+            font-size: 0.95rem;
         }
-        .formats-table tr:last-child td { border-bottom: none; }
-        .badge {
+        .format-action {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .format-action i { color: var(--accent-teal); font-size: 0.7rem; }
+        .format-badges { display: flex; flex-wrap: wrap; gap: 5px; }
+        .fmt-badge {
             display: inline-block;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255,255,255,0.04);
             border: 1px solid var(--glass-border);
-            padding: 0.2rem 0.55rem;
-            border-radius: 7px;
-            font-size: 0.82rem;
+            padding: 0.18rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.78rem;
             font-family: monospace;
-            color: #d1d5db;
-            margin: 2px 1px;
+            color: #c4b5fd;
+            transition: all 0.2s ease;
+        }
+        .fmt-badge:hover {
+            background: rgba(168,85,247,0.1);
+            border-color: rgba(168,85,247,0.3);
+            color: #e9d5ff;
         }
 
         /* ── Footer ───────────────────────────────────────── */
         footer {
             margin-top: auto;
             border-top: 1px solid var(--glass-border);
-            padding: 1.75rem 1.5rem;
+            padding: 2rem 1.5rem;
             text-align: center;
             background: #06060a;
             z-index: 10;
+            position: relative;
         }
-        footer p { color: var(--text-secondary); font-size: 0.875rem; }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+        .footer-brand {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1rem;
+            background: linear-gradient(135deg, var(--text-primary) 30%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .footer-brand i { color: var(--accent-purple); -webkit-text-fill-color: initial; }
+        footer p { color: var(--text-secondary); font-size: 0.85rem; }
         footer a { color: var(--accent-purple); text-decoration: none; transition: color 0.3s ease; }
         footer a:hover { color: var(--accent-blue); }
 
-        /* ── Responsive breakpoints ───────────────────────── */
+        /* ── Scroll to top ────────────────────────────────── */
+        #scroll-top {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            width: 42px; height: 42px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            z-index: 200;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+            box-shadow: 0 4px 20px rgba(99,102,241,0.4);
+        }
+        #scroll-top.visible { opacity: 1; transform: translateY(0); }
+        #scroll-top:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(99,102,241,0.55); }
 
-        /* Tablets */
+        /* ── Responsive ───────────────────────────────────── */
         @media (max-width: 768px) {
-            .hero { padding: 3.5rem 1.25rem 3rem; }
-            .hero-title { letter-spacing: -1px; }
-            .cta-group { gap: 0.75rem; }
+            .hero { padding: 4rem 1.25rem 3rem; }
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            .step-connector { display: none; }
             .cta-group .nav-btn {
                 width: 100%;
-                max-width: 300px;
+                max-width: 320px;
                 justify-content: center;
-                padding: 0.9rem 1.5rem;
-                font-size: 1rem;
-                border-radius: 14px;
             }
+            .stat-divider { display: none; }
+            .stats-row { gap: 1.5rem; }
         }
 
-        /* Mobile */
         @media (max-width: 480px) {
             .brand { font-size: 1.1rem; }
-            .brand-text { display: none; } /* hide text, keep icon */
+            .brand-text { display: none; }
             .nav-btn { font-size: 0.82rem; padding: 0.45rem 0.85rem; }
-            .hero { padding: 2.5rem 1rem 2rem; }
-            .hero-badge { font-size: 0.75rem; padding: 0.4rem 0.9rem; }
-            .hero-title { letter-spacing: -0.5px; }
-            .features { padding: 2rem 1rem; }
-            .feature-card { padding: 1.5rem; }
-            .formats-section { margin: 1.5rem auto 2.5rem; padding: 0 1rem; }
-            .formats-table th, .formats-table td { padding: 0.8rem 1rem; font-size: 0.85rem; }
+            .hero { padding: 2.75rem 1rem 2rem; }
+            .hero-title { letter-spacing: -1px; }
+            .features { padding: 2rem 1rem 3rem; }
+            .feature-card { padding: 1.75rem; }
+            .formats-section { padding: 0 1rem; }
+            .how-section { padding: 3rem 1rem; }
         }
 
-        /* Very small phones (320px) */
         @media (max-width: 360px) {
-            .nav-links .btn-secondary { display: none; }
+            .nav-links .btn-secondary:not(:last-child) { display: none; }
         }
     </style>
 </head>
 <body>
-    <div class="ambient-glow glow-1"></div>
-    <div class="ambient-glow glow-2"></div>
 
-    <nav>
+    <canvas id="particle-canvas"></canvas>
+    <div class="glow-orb glow-1" id="glow1"></div>
+    <div class="glow-orb glow-2" id="glow2"></div>
+    <div class="glow-orb glow-3"></div>
+
+    <nav id="main-nav">
         <div class="nav-container">
             <div class="brand">
                 <i class="fa-solid fa-book-open-reader"></i>
                 <span class="brand-text">PageStream</span>
             </div>
             <div class="nav-links">
+                <a href="#how-it-works" class="nav-btn btn-secondary">
+                    <i class="fa-solid fa-circle-info"></i> How it works
+                </a>
                 <a href="/admin" class="nav-btn btn-secondary">
                     <i class="fa-solid fa-user-shield"></i> Admin
                 </a>
@@ -359,107 +735,365 @@
     </nav>
 
     <main>
+        <!-- ── Hero ── -->
         <section class="hero">
-            <div class="hero-badge">
-                <i class="fa-solid fa-bolt"></i> High-Speed Literature Streamer
+            <div class="hero-badge reveal">
+                <span class="badge-dot"></span>
+                High-Speed Literature Streamer
             </div>
-            <h1 class="hero-title">
-                Stream Your Books &amp; Audiobooks <span class="gradient-text">Instantly</span>
+            <h1 class="hero-title reveal reveal-delay-1">
+                Stream Books &amp; Audiobooks<br>
+                <span class="gradient-text" id="typewriter-target">Instantly</span><span class="typewriter-cursor" id="tw-cursor" style="display:none"></span>
             </h1>
-            <p class="hero-subtitle">
-                The ultimate premium Telegram bot designed exclusively for literature lovers. Convert eBooks, audiobooks, documents, and archives into blazing-fast streamable and downloadable web links.
+            <p class="hero-subtitle reveal reveal-delay-2">
+                The ultimate premium Telegram bot for literature lovers. Convert eBooks, audiobooks, documents, and archives into blazing-fast streamable and downloadable web links.
             </p>
-            <div class="cta-group">
-                <a href="https://t.me/{{ bot_username }}" target="_blank" class="nav-btn btn-primary" style="padding:0.9rem 1.75rem;font-size:1.05rem;border-radius:14px;">
+            <div class="cta-group reveal reveal-delay-3">
+                <a href="https://t.me/{{ bot_username }}" target="_blank" class="nav-btn btn-primary cta-large">
                     <i class="fa-brands fa-telegram"></i> Get Started on Telegram
                 </a>
-                <a href="#how-it-works" class="nav-btn btn-secondary" style="padding:0.9rem 1.75rem;font-size:1.05rem;border-radius:14px;">
-                    Learn More
+                <a href="#how-it-works" class="nav-btn btn-secondary cta-large">
+                    <i class="fa-solid fa-arrow-down"></i> See how it works
                 </a>
             </div>
-        </section>
-
-        <section class="features" id="how-it-works">
-            <h2 class="section-title">✨ Premium Advanced Features</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="card-icon"><i class="fa-solid fa-book"></i></div>
-                    <h3 class="card-title">Ultimate Ebook Reader</h3>
-                    <p class="card-desc">Enjoy paginated EPUBs, hardware-accelerated PDF canvas views, and a client-side CBZ comic reader directly in your browser.</p>
+            <div class="stats-row reveal reveal-delay-4">
+                <div class="stat-item">
+                    <span class="stat-num" data-count="6">0</span>
+                    <span class="stat-label">Format types</span>
                 </div>
-                <div class="feature-card">
-                    <div class="card-icon"><i class="fa-solid fa-headphones"></i></div>
-                    <h3 class="card-title">Atmospheric Audio Streamer</h3>
-                    <p class="card-desc">Listen to high-fidelity audiobooks with metadata processing, real-time duration updates, and fully responsive playback controls.</p>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="13">0</span>
+                    <span class="stat-label">File formats</span>
                 </div>
-                <div class="feature-card">
-                    <div class="card-icon"><i class="fa-solid fa-gauge-high"></i></div>
-                    <h3 class="card-title">Blazing-Fast Speed</h3>
-                    <p class="card-desc">Experience ultra-high-speed download and streaming links that bypass typical Telegram API bottlenecks.</p>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num" data-count="100">0</span>
+                    <span class="stat-label">% browser native</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span class="stat-num" data-suffix="x">∞</span>
+                    <span class="stat-label">Faster than Telegram</span>
                 </div>
             </div>
         </section>
 
+        <!-- ── How it works ── -->
+        <section class="how-section" id="how-it-works">
+            <p class="section-label reveal">Simple 3-step process</p>
+            <h2 class="section-title reveal reveal-delay-1">How PageStream Works</h2>
+            <div class="steps-grid">
+                <div class="step reveal">
+                    <div class="step-number">
+                        1
+                        <span class="step-icon"><i class="fa-solid fa-paper-plane"></i></span>
+                    </div>
+                    <div class="step-title">Send to Bot</div>
+                    <div class="step-desc">Send any supported file to the PageStream Telegram bot — eBook, audiobook, document, or archive.</div>
+                </div>
+                <div class="step-connector reveal reveal-delay-1">
+                    <div class="connector-line"></div>
+                    <span class="connector-arrow"><i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+                <div class="step reveal reveal-delay-2">
+                    <div class="step-number" style="background: linear-gradient(135deg, var(--accent-purple), var(--accent-teal));">
+                        2
+                        <span class="step-icon"><i class="fa-solid fa-link"></i></span>
+                    </div>
+                    <div class="step-title">Get Stream Link</div>
+                    <div class="step-desc">Bot instantly generates a high-speed web link, bypassing Telegram's speed limits completely.</div>
+                </div>
+                <div class="step-connector reveal reveal-delay-2">
+                    <div class="connector-line" style="background: linear-gradient(90deg, var(--accent-purple), var(--accent-teal))"></div>
+                    <span class="connector-arrow" style="color: var(--accent-teal)"><i class="fa-solid fa-chevron-right"></i></span>
+                </div>
+                <div class="step reveal reveal-delay-3">
+                    <div class="step-number" style="background: linear-gradient(135deg, var(--accent-teal), #0ea5e9);">
+                        3
+                        <span class="step-icon"><i class="fa-solid fa-book-open"></i></span>
+                    </div>
+                    <div class="step-title">Read or Listen</div>
+                    <div class="step-desc">Open the link in any browser. Read EPUBs, stream audio, view PDFs — no app needed.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Features ── -->
+        <section class="features">
+            <p class="section-label reveal">What you get</p>
+            <h2 class="section-title reveal reveal-delay-1">Premium Advanced Features</h2>
+            <div class="features-grid">
+                <div class="feature-card reveal">
+                    <div class="card-shimmer"></div>
+                    <div class="card-icon icon-blue">
+                        <div class="card-glow"></div>
+                        <i class="fa-solid fa-book"></i>
+                    </div>
+                    <h3 class="card-title">Ultimate Ebook Reader</h3>
+                    <p class="card-desc">Paginated EPUBs, hardware-accelerated PDF canvas views, and a client-side CBZ comic reader — all directly in your browser with themes and font control.</p>
+                    <span class="card-tag"><i class="fa-solid fa-check"></i> EPUB · PDF · CBZ · FB2 · DjVu · TXT</span>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="card-shimmer"></div>
+                    <div class="card-icon icon-purple">
+                        <div class="card-glow"></div>
+                        <i class="fa-solid fa-headphones"></i>
+                    </div>
+                    <h3 class="card-title">Atmospheric Audio Streamer</h3>
+                    <p class="card-desc">High-fidelity audiobook streaming with metadata display, spinning vinyl UI, real-time controls, and fully responsive playback — powered by Vidstack.</p>
+                    <span class="card-tag"><i class="fa-solid fa-check"></i> MP3 · M4B · M4A · OPUS · FLAC</span>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="card-shimmer"></div>
+                    <div class="card-icon icon-teal">
+                        <div class="card-glow"></div>
+                        <i class="fa-solid fa-gauge-high"></i>
+                    </div>
+                    <h3 class="card-title">Blazing-Fast Delivery</h3>
+                    <p class="card-desc">Ultra-high-speed download and streaming links that bypass typical Telegram API bottlenecks. Share links with anyone — no Telegram account needed to view.</p>
+                    <span class="card-tag"><i class="fa-solid fa-check"></i> No account needed to view</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- ── Formats ── -->
         <section class="formats-section">
-            <h2 class="section-title">📊 Supported File Formats</h2>
-            <div class="table-scroll">
-                <table class="formats-table">
-                    <thead>
-                        <tr>
-                            <th>Category</th>
-                            <th>Allowed Formats</th>
-                            <th>Web Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><strong>📚 eBooks &amp; Comics</strong></td>
-                            <td>
-                                <span class="badge">.epub</span>
-                                <span class="badge">.pdf</span>
-                                <span class="badge">.mobi</span>
-                                <span class="badge">.cbz</span>
-                                <span class="badge" title="Download only — RAR format">.cbr</span>
-                            </td>
-                            <td>Opens in web reader</td>
-                        </tr>
-                        <tr>
-                            <td><strong>🎧 Audiobooks</strong></td>
-                            <td>
-                                <span class="badge">.mp3</span>
-                                <span class="badge">.m4b</span>
-                                <span class="badge">.m4a</span>
-                                <span class="badge">.opus</span>
-                                <span class="badge">.flac</span>
-                            </td>
-                            <td>Streams in audio player</td>
-                        </tr>
-                        <tr>
-                            <td><strong>📄 Documents</strong></td>
-                            <td>
-                                <span class="badge">.docx</span>
-                                <span class="badge">.txt</span>
-                                <span class="badge">.rtf</span>
-                            </td>
-                            <td>Download card</td>
-                        </tr>
-                        <tr>
-                            <td><strong>📦 Archives</strong></td>
-                            <td>
-                                <span class="badge">.zip</span>
-                                <span class="badge">.rar</span>
-                                <span class="badge">.7z</span>
-                            </td>
-                            <td>Direct download</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <p class="section-label reveal">Compatibility</p>
+            <h2 class="section-title reveal reveal-delay-1">Supported File Formats</h2>
+            <div class="formats-grid">
+                <div class="format-card reveal">
+                    <div class="format-card-header">
+                        <span class="format-emoji">📚</span>
+                        <span class="format-category">eBooks &amp; Comics</span>
+                    </div>
+                    <div class="format-action"><i class="fa-solid fa-circle-check"></i> Opens in web reader</div>
+                    <div class="format-badges">
+                        <span class="fmt-badge">.epub</span>
+                        <span class="fmt-badge">.pdf</span>
+                        <span class="fmt-badge">.mobi</span>
+                        <span class="fmt-badge">.cbz</span>
+                        <span class="fmt-badge" title="Download only">.cbr</span>
+                        <span class="fmt-badge">.fb2</span>
+                        <span class="fmt-badge">.djvu</span>
+                    </div>
+                </div>
+                <div class="format-card reveal reveal-delay-1">
+                    <div class="format-card-header">
+                        <span class="format-emoji">🎧</span>
+                        <span class="format-category">Audiobooks</span>
+                    </div>
+                    <div class="format-action"><i class="fa-solid fa-circle-check"></i> Streams in audio player</div>
+                    <div class="format-badges">
+                        <span class="fmt-badge">.mp3</span>
+                        <span class="fmt-badge">.m4b</span>
+                        <span class="fmt-badge">.m4a</span>
+                        <span class="fmt-badge">.opus</span>
+                        <span class="fmt-badge">.flac</span>
+                    </div>
+                </div>
+                <div class="format-card reveal reveal-delay-2">
+                    <div class="format-card-header">
+                        <span class="format-emoji">📄</span>
+                        <span class="format-category">Documents</span>
+                    </div>
+                    <div class="format-action"><i class="fa-solid fa-circle-check"></i> Download card</div>
+                    <div class="format-badges">
+                        <span class="fmt-badge">.docx</span>
+                        <span class="fmt-badge">.txt</span>
+                        <span class="fmt-badge">.rtf</span>
+                    </div>
+                </div>
+                <div class="format-card reveal reveal-delay-3">
+                    <div class="format-card-header">
+                        <span class="format-emoji">📦</span>
+                        <span class="format-category">Archives</span>
+                    </div>
+                    <div class="format-action"><i class="fa-solid fa-circle-check"></i> Direct download</div>
+                    <div class="format-badges">
+                        <span class="fmt-badge">.zip</span>
+                        <span class="fmt-badge">.rar</span>
+                        <span class="fmt-badge">.7z</span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>© 2026 PageStream. Powered by <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank" rel="noopener">PageStream</a>.</p>
+        <div class="footer-inner">
+            <div class="footer-brand">
+                <i class="fa-solid fa-book-open-reader"></i> PageStream
+            </div>
+            <p>© 2026 PageStream. Open source on <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank" rel="noopener">GitHub</a>.</p>
+        </div>
     </footer>
+
+    <button id="scroll-top" title="Back to top" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+        <i class="fa-solid fa-arrow-up"></i>
+    </button>
+
+    <script>
+    (() => {
+        /* ── Particle canvas ── */
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        const COLORS = ['rgba(99,102,241,', 'rgba(168,85,247,', 'rgba(110,231,183,'];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        class Particle {
+            constructor() { this.reset(); }
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 1.5 + 0.3;
+                this.speedX = (Math.random() - 0.5) * 0.4;
+                this.speedY = (Math.random() - 0.5) * 0.4;
+                this.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+                this.opacity = Math.random() * 0.5 + 0.1;
+                this.life = 0;
+                this.maxLife = Math.random() * 200 + 100;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                this.life++;
+                if (this.life > this.maxLife || this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+                    this.reset();
+                }
+            }
+            draw() {
+                const fade = this.life < 30 ? this.life / 30 : this.life > this.maxLife - 30 ? (this.maxLife - this.life) / 30 : 1;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = this.color + (this.opacity * fade) + ')';
+                ctx.fill();
+            }
+        }
+
+        for (let i = 0; i < 80; i++) {
+            const p = new Particle();
+            p.life = Math.random() * p.maxLife;
+            particles.push(p);
+        }
+
+        function animParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => { p.update(); p.draw(); });
+            requestAnimationFrame(animParticles);
+        }
+        animParticles();
+
+        /* ── Parallax glow orbs on mouse move ── */
+        const glow1 = document.getElementById('glow1');
+        const glow2 = document.getElementById('glow2');
+        let mouseX = 0, mouseY = 0;
+        let glowX = 0, glowY = 0;
+        document.addEventListener('mousemove', e => {
+            mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+        });
+        function animGlow() {
+            glowX += (mouseX - glowX) * 0.04;
+            glowY += (mouseY - glowY) * 0.04;
+            glow1.style.transform = `translate(${glowX * 30}px, ${glowY * 20}px)`;
+            glow2.style.transform = `translate(${-glowX * 20}px, ${-glowY * 15}px)`;
+            requestAnimationFrame(animGlow);
+        }
+        animGlow();
+
+        /* ── Nav shrink on scroll ── */
+        const nav = document.getElementById('main-nav');
+        const scrollTopBtn = document.getElementById('scroll-top');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 60);
+            scrollTopBtn.classList.toggle('visible', window.scrollY > 400);
+        }, { passive: true });
+
+        /* ── Scroll reveal (Intersection Observer) ── */
+        const revealEls = document.querySelectorAll('.reveal');
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    observer.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        revealEls.forEach(el => observer.observe(el));
+
+        /* ── Counter animation ── */
+        function animateCounter(el, target, duration = 1800) {
+            let start = null;
+            const step = (ts) => {
+                if (!start) start = ts;
+                const progress = Math.min((ts - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.round(eased * target);
+                if (progress < 1) requestAnimationFrame(step);
+                else el.textContent = target;
+            };
+            requestAnimationFrame(step);
+        }
+
+        const counterObserver = new IntersectionObserver((entries) => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    const target = parseInt(e.target.dataset.count);
+                    animateCounter(e.target, target);
+                    counterObserver.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+
+        /* ── Typewriter effect ── */
+        const words = ['Instantly', 'Beautifully', 'Anywhere', 'For Free'];
+        const target = document.getElementById('typewriter-target');
+        const cursor = document.getElementById('tw-cursor');
+        let wordIdx = 0;
+        let charIdx = 0;
+        let deleting = false;
+        let twStarted = false;
+
+        function typeStep() {
+            const word = words[wordIdx];
+            if (!deleting) {
+                charIdx++;
+                target.textContent = word.slice(0, charIdx);
+                if (charIdx === word.length) {
+                    deleting = true;
+                    setTimeout(typeStep, 2200);
+                    return;
+                }
+                setTimeout(typeStep, 90);
+            } else {
+                charIdx--;
+                target.textContent = word.slice(0, charIdx);
+                if (charIdx === 0) {
+                    deleting = false;
+                    wordIdx = (wordIdx + 1) % words.length;
+                    setTimeout(typeStep, 300);
+                    return;
+                }
+                setTimeout(typeStep, 50);
+            }
+        }
+
+        // Start typewriter after initial reveal
+        setTimeout(() => {
+            cursor.style.display = 'inline-block';
+            typeStep();
+        }, 1400);
+
+    })();
+    </script>
 </body>
 </html>
