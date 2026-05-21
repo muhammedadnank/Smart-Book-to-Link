@@ -124,6 +124,18 @@ async def start_services():
     print_banner()
     print("╔════════════════ INITIALIZING BOT SERVICES ════════════════╗")
 
+    print("   ▶ Starting Web Server initialization...")
+    try:
+        app_runner = web.AppRunner(await web_server())
+        await app_runner.setup()
+        bind_address = Var.BIND_ADDRESS
+        site = web.TCPSite(app_runner, bind_address, Var.PORT)
+        await site.start()
+        print(f"   ✓ Web Server started on {bind_address}:{Var.PORT}")
+    except Exception as e:
+        logger.error(f"   ✖ Failed to start Web Server: {e}", exc_info=True)
+        return
+
     print("   ▶ Starting Telegram Bot initialization...")
     try:
         try:
@@ -203,14 +215,6 @@ async def start_services():
         )
         return
 
-    print("   ▶ Starting Web Server initialization...")
-    try:
-        app_runner = web.AppRunner(await web_server())
-        await app_runner.setup()
-        bind_address = Var.BIND_ADDRESS
-        site = web.TCPSite(app_runner, bind_address, Var.PORT)
-        await site.start()
-
         keepalive_task = asyncio.create_task(
             ping_server(), name="keepalive_task"
         )
@@ -220,7 +224,7 @@ async def start_services():
         )
 
     except Exception as e:
-        logger.error(f"   ✖ Failed to start Web Server: {e}", exc_info=True)
+        logger.error(f"   ✖ Failed to start services: {e}", exc_info=True)
         if 'request_executor_task' in locals() and not request_executor_task.done():
             request_executor_task.cancel()
             try:
