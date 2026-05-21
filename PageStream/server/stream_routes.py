@@ -17,6 +17,8 @@ from PageStream.utils.canonical_files import (
     PUBLIC_HASH_LENGTH,
     get_file_by_hash,
     update_cached_file_id,
+    build_file_record,
+    build_public_hash,
 )
 from PageStream.utils.custom_dl import ByteStreamer
 from PageStream.utils.file_properties import get_media
@@ -584,6 +586,76 @@ async def admin_logs(request: web.Request):
     template = template_env.get_template('admin/logs.html')
     html = await template.render_async(logs=logs, log_path=os.path.basename(LOG_FILE) if 'LOG_FILE' in locals() else "Unknown")
     return web.Response(text=html, content_type="text/html")
+
+
+@routes.get(r"/watch/by-file-id/{file_id}/{name:.+}", allow_head=True)
+async def watch_by_file_id(request: web.Request):
+    """
+    On-demand registration endpoint for files from external bots (e.g. Ebook-Search-Bot).
+    Accepts a Telegram file_id, copies to BIN_CHANNEL, registers in PageStream DB,
+    then redirects to the canonical /watch/f/{hash}/{name} URL for streaming.
+    """
+    try:
+        raw_file_id = request.match_info["file_id"]
+        name = unquote(request.match_info.get("name", "file"))
+
+        if not raw_file_id or len(raw_file_id) < 10:
+            raise web.HTTPBadRequest(text="Invalid file_id")
+
+        # Copy file to BIN_CHANNEL to get the canonical message + file_unique_id
+        try:
+            stored_msg = await StreamBot.send_cached_media(
+                chat_id=int(Var.BIN_CHANNEL),
+                file_id=raw_file_id
+            )
+        except Exception as e:
+            logger.warning(f"send_cached_media failed for file_id={raw_file_id[:20]}…: {e}")
+            raise web.HTTPNotFound(text="Resource not found")
+
+        if not stored_msg:
+            raise web.HTTPNotFound(text="Resource not found")
+
+        # Build canonical record from the stored message
+        record = build_file_record(stored_msg)
+        if not record:
+            try:
+                await stored_msg.delete()
+            except Exception:
+                pass
+            raise web.HTTPNotFound(text="Resource not found")
+
+        pub_hash = record["public_hash"]
+
+        # Check if already registered to avoid duplicates
+        existing = await get_file_by_hash(pub_hash, raise_on_error=False)
+        if existing:
+            # Already in DB — delete the duplicate we just uploaded
+            try:
+                await stored_msg.delete()
+            except Exception:
+                pass
+            record = existing
+        else:
+            # New file — save record to DB
+            try:
+                await db.create_file_record(record)
+            except Exception as e:
+                logger.warning(f"create_file_record failed for {pub_hash}: {e}")
+                existing = await get_file_by_hash(pub_hash, raise_on_error=False)
+                if existing:
+                    record = existing
+
+        # Redirect to canonical watch URL for rendering + streaming
+        file_name = record.get("file_name") or name
+        redirect_url = f"/watch/f/{pub_hash}/{quote(file_name, safe='')}"
+        raise web.HTTPFound(redirect_url)
+
+    except web.HTTPException:
+        raise
+    except Exception as e:
+        error_id = secrets.token_hex(6)
+        logger.error(f"watch_by_file_id error {error_id}: {e}", exc_info=True)
+        raise web.HTTPInternalServerError(text=f"Server error: {error_id}") from e
 
 
 @routes.get(r"/{path:.+}", allow_head=True)
