@@ -9,4 +9,4 @@ else
 fi
 
 echo "▶ Starting PageStream bot..."
-exec python3 -m PageStream
+exec python3 -u -m PageStream
