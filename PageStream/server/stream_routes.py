@@ -588,34 +588,89 @@ async def admin_logs(request: web.Request):
     return web.Response(text=html, content_type="text/html")
 
 
+def _rebuild_pyrogram_file_id(stored_file_id: str, file_ref_b64: str) -> str | None:
+    """
+    Reconstruct a Pyrogram-compatible file_id from Ebook-Search-Bot's custom
+    stripped format (encode_file_id output) + base64url file_ref.
+    """
+    try:
+        import base64
+        from struct import unpack as su
+        from pyrogram.file_id import FileId, FileType
+
+        # 1. Undo custom base64url + zero run-length encoding
+        b64 = stored_file_id + "=" * (-len(stored_file_id) % 4)
+        compressed = base64.urlsafe_b64decode(b64)
+        raw = b""
+        i = 0
+        while i < len(compressed):
+            if compressed[i] == 0 and i + 1 < len(compressed):
+                raw += b"\x00" * compressed[i + 1]
+                i += 2
+            else:
+                raw += bytes([compressed[i]])
+                i += 1
+
+        # 2. Unpack: <iiqq = file_type(4) + dc_id(4) + media_id(8) + access_hash(8) = 24 bytes
+        if len(raw) < 24:
+            return None
+        file_type_int, dc_id, media_id, access_hash = su("<iiqq", raw[:24])
+
+        # 3. Decode file_reference
+        file_reference = b""
+        if file_ref_b64:
+            padding = -len(file_ref_b64) % 4
+            file_reference = base64.urlsafe_b64decode(file_ref_b64 + "=" * padding)
+
+        # 4. Build Pyrogram FileId and encode
+        fid = FileId()
+        fid.file_type = FileType(file_type_int)
+        fid.dc_id = dc_id
+        fid.media_id = media_id
+        fid.access_hash = access_hash
+        fid.file_reference = file_reference
+        fid.major = 4
+        fid.minor = 22
+        return fid.encode()
+    except Exception as e:
+        logger.warning(f"_rebuild_pyrogram_file_id failed: {e}")
+        return None
+
+
 @routes.get(r"/watch/by-file-id/{file_id}/{name:.+}", allow_head=True)
 async def watch_by_file_id(request: web.Request):
     """
-    On-demand registration endpoint for files from external bots (e.g. Ebook-Search-Bot).
-    Accepts a Telegram file_id, copies to BIN_CHANNEL, registers in PageStream DB,
-    then redirects to the canonical /watch/f/{hash}/{name} URL for streaming.
+    On-demand registration for files from external bots (e.g. Ebook-Search-Bot).
+    Reconstructs a proper Pyrogram file_id, copies to BIN_CHANNEL, registers in
+    PageStream DB, then redirects to /watch/f/{hash}/{name} for streaming.
     """
     try:
         raw_file_id = request.match_info["file_id"]
         name = unquote(request.match_info.get("name", "file"))
+        file_ref_b64 = request.query.get("ref", "")
 
         if not raw_file_id or len(raw_file_id) < 10:
             raise web.HTTPBadRequest(text="Invalid file_id")
 
-        # Copy file to BIN_CHANNEL to get the canonical message + file_unique_id
+        # Reconstruct a Pyrogram-compatible file_id
+        full_file_id = _rebuild_pyrogram_file_id(raw_file_id, file_ref_b64)
+        if not full_file_id:
+            logger.warning(f"Could not reconstruct file_id from: {raw_file_id[:20]}…")
+            raise web.HTTPNotFound(text="Resource not found")
+
+        # Copy to BIN_CHANNEL to get canonical message + file_unique_id
         try:
             stored_msg = await StreamBot.send_cached_media(
                 chat_id=int(Var.BIN_CHANNEL),
-                file_id=raw_file_id
+                file_id=full_file_id
             )
         except Exception as e:
-            logger.warning(f"send_cached_media failed for file_id={raw_file_id[:20]}…: {e}")
+            logger.warning(f"send_cached_media failed: {e}")
             raise web.HTTPNotFound(text="Resource not found")
 
         if not stored_msg:
             raise web.HTTPNotFound(text="Resource not found")
 
-        # Build canonical record from the stored message
         record = build_file_record(stored_msg)
         if not record:
             try:
@@ -626,17 +681,14 @@ async def watch_by_file_id(request: web.Request):
 
         pub_hash = record["public_hash"]
 
-        # Check if already registered to avoid duplicates
         existing = await get_file_by_hash(pub_hash, raise_on_error=False)
         if existing:
-            # Already in DB — delete the duplicate we just uploaded
             try:
                 await stored_msg.delete()
             except Exception:
                 pass
             record = existing
         else:
-            # New file — save record to DB
             try:
                 await db.create_file_record(record)
             except Exception as e:
@@ -645,7 +697,6 @@ async def watch_by_file_id(request: web.Request):
                 if existing:
                     record = existing
 
-        # Redirect to canonical watch URL for rendering + streaming
         file_name = record.get("file_name") or name
         redirect_url = f"/watch/f/{pub_hash}/{quote(file_name, safe='')}"
         raise web.HTTPFound(redirect_url)
@@ -656,6 +707,7 @@ async def watch_by_file_id(request: web.Request):
         error_id = secrets.token_hex(6)
         logger.error(f"watch_by_file_id error {error_id}: {e}", exc_info=True)
         raise web.HTTPInternalServerError(text=f"Server error: {error_id}") from e
+
 
 
 @routes.get(r"/{path:.+}", allow_head=True)
