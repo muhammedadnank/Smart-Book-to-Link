@@ -1,6 +1,3 @@
-return allChunks.buffer;
-    }
-
     /* ── EPUB ─────────────────────────────────────── */
     async function loadEpub() {
         if (typeof ePub === 'undefined') {
@@ -88,4 +85,8 @@ return allChunks.buffer;
             });
 
             book.on('openFailed', err => {
-                showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));
+                showError('Failed to open EPUB file: ' + (err && err.message ? err.message : 'Unknown error'));            });
+        } catch (err) {
+            showError('Could not render EPUB: ' + (err && err.message ? err.message : 'Unknown error') + '. Try downloading the file.');
+        }
+    }

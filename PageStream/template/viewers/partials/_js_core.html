@@ -139,3 +139,5 @@ const sidebar      = document.getElementById('sidebar');
             allChunks.set(chunk, position);
             position += chunk.length;
         }
+        return allChunks.buffer;
+    }
