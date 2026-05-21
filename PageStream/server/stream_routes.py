@@ -3,6 +3,7 @@
 import re
 import secrets
 import time
+import psutil
 from urllib.parse import quote, unquote
 
 from aiohttp import web
@@ -19,8 +20,9 @@ from PageStream.utils.canonical_files import (
 from PageStream.utils.custom_dl import ByteStreamer
 from PageStream.utils.file_properties import get_media
 from PageStream.utils.logger import logger
-from PageStream.utils.render_template import render_media_page, render_page
+from PageStream.utils.render_template import render_media_page, render_page, template_env
 from PageStream.utils.time_format import get_readable_time
+from PageStream.utils.database import db
 from PageStream.vars import Var
 
 routes = web.RouteTableDef()
@@ -431,6 +433,113 @@ async def canonical_media_delivery(request: web.Request):
         logger.error(f"Canonical server error {error_id}: {e}", exc_info=True)
         raise web.HTTPInternalServerError(
             text=f"An unexpected server error occurred: {error_id}") from e
+
+
+def is_admin_session(request: web.Request) -> bool:
+    return request.cookies.get("admin_session") == Var.ADMIN_PASSWORD
+
+@routes.get("/admin", allow_head=True)
+async def admin_dashboard(request: web.Request):
+    if not is_admin_session(request):
+        return web.HTTPFound("/admin/login")
+    
+    total_users = await db.total_users_count()
+    authorized_users = await db.get_authorized_users_count()
+    total_files = await db.files_col.count_documents({})
+    uptime = get_readable_time(time.time() - StartTime)
+    active_clients = sum(1 for load in work_loads.values() if load > 0)
+    cpu_usage = psutil.cpu_percent(interval=None)
+    ram_usage = psutil.virtual_memory().percent
+    
+    template = template_env.get_template('admin/dashboard.html')
+    html = await template.render_async(
+        total_users=total_users,
+        authorized_users=authorized_users,
+        total_files=total_files,
+        uptime=uptime,
+        active_clients=active_clients,
+        cpu=cpu_usage,
+        ram=ram_usage
+    )
+    return web.Response(text=html, content_type="text/html")
+
+@routes.get("/admin/login", allow_head=True)
+async def admin_login_get(request: web.Request):
+    if is_admin_session(request):
+        return web.HTTPFound("/admin")
+    template = template_env.get_template('admin/login.html')
+    html = await template.render_async(error=None)
+    return web.Response(text=html, content_type="text/html")
+
+@routes.post("/admin/login")
+async def admin_login_post(request: web.Request):
+    data = await request.post()
+    password = data.get("password")
+    
+    if password == Var.ADMIN_PASSWORD:
+        response = web.HTTPFound("/admin")
+        response.set_cookie("admin_session", password, max_age=86400 * 30) # 30 days
+        return response
+        
+    template = template_env.get_template('admin/login.html')
+    html = await template.render_async(error="Invalid password")
+    return web.Response(text=html, content_type="text/html", status=401)
+
+@routes.get("/admin/logout", allow_head=True)
+async def admin_logout(request: web.Request):
+    response = web.HTTPFound("/admin/login")
+    response.del_cookie("admin_session")
+    return response
+
+@routes.get("/admin/users", allow_head=True)
+async def admin_users(request: web.Request):
+    if not is_admin_session(request):
+        return web.HTTPFound("/admin/login")
+    
+    cursor = await db.get_all_users()
+    users = await cursor.to_list(length=None)
+    
+    for u in users:
+        u['is_authorized'] = await db.is_user_authorized(u['id'])
+        u['is_banned'] = await db.is_user_banned(u['id'])
+        u['is_owner'] = (u['id'] == Var.OWNER_ID)
+        
+    template = template_env.get_template('admin/users.html')
+    html = await template.render_async(users=users)
+    return web.Response(text=html, content_type="text/html")
+
+@routes.get("/admin/files", allow_head=True)
+async def admin_files(request: web.Request):
+    if not is_admin_session(request):
+        return web.HTTPFound("/admin/login")
+    
+    query = request.query.get("q", "").strip()
+    search_filter = {}
+    if query:
+        search_filter = {
+            "$or": [
+                {"file_name": {"$regex": query, "$options": "i"}},
+                {"public_hash": {"$regex": query, "$options": "i"}}
+            ]
+        }
+        
+    cursor = db.files_col.find(search_filter).sort("created_at", -1).limit(200)
+    files = await cursor.to_list(length=None)
+    
+    template = template_env.get_template('admin/files.html')
+    html = await template.render_async(files=files, query=query)
+    return web.Response(text=html, content_type="text/html")
+
+@routes.post("/admin/files/delete/{hash}")
+async def admin_files_delete(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    file_hash = request.match_info["hash"]
+    result = await db.files_col.delete_one({"public_hash": file_hash})
+    if result.deleted_count > 0:
+        return web.json_response({"success": True})
+    return web.json_response({"error": "File not found"}, status=404)
 
 
 @routes.get(r"/{path:.+}", allow_head=True)

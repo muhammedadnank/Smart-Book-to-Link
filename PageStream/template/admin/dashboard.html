@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PageStream</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121e;
+            --accent-glow: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.04) 50%, transparent 100%);
+            --accent-purple: #a855f7;
+            --accent-blue: #6366f1;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --glass-bg: rgba(18, 18, 30, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.05);
+            --glass-highlight: rgba(255, 255, 255, 0.08);
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
+        }
+
+        h1, h2, h3, .brand { font-family: 'Outfit', sans-serif; }
+
+        .ambient-glow {
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: var(--accent-glow);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .glow-1 { top: -200px; right: -200px; }
+        .glow-2 { bottom: -200px; left: -200px; }
+
+        nav {
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            background: rgba(10, 10, 15, 0.85);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 0.9rem 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-primary) 30%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .brand i { color: var(--accent-purple); -webkit-text-fill-color: initial; }
+
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.875rem;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--glass-highlight);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            transform: translateY(-2px);
+        }
+
+        main {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2.5rem 1.5rem;
+            z-index: 10;
+        }
+
+        .welcome-header {
+            margin-bottom: 2rem;
+        }
+
+        .welcome-header h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+
+        .welcome-header p {
+            color: var(--text-secondary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 1.75rem;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.01) 0%, transparent 100%);
+            pointer-events: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-family: 'Outfit', sans-serif;
+            font-size: 2.25rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-icon {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            font-size: 2.5rem;
+            color: rgba(255, 255, 255, 0.03);
+        }
+
+        .metric-progress {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 100px;
+            height: 6px;
+            width: 100%;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .metric-bar {
+            height: 100%;
+            border-radius: 100px;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .bar-cpu { background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple)); }
+        .bar-ram { background: linear-gradient(90deg, #34d399, #059669); }
+
+        .dashboard-sections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .section-card {
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+        }
+
+        .section-card h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .section-card h2 i {
+            color: var(--accent-purple);
+        }
+
+        .quick-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .action-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.25rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            text-decoration: none;
+            color: var(--text-primary);
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .action-link:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--glass-highlight);
+            transform: translateX(4px);
+        }
+
+        .action-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(168, 85, 247, 0.1);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-purple);
+            font-size: 1.1rem;
+        }
+
+        .action-link:nth-child(2) .action-icon {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .action-link:nth-child(3) .action-icon {
+            background: rgba(52, 211, 153, 0.1);
+            color: #34d399;
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-detail {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .activity-title {
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .activity-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: rgba(168, 85, 247, 0.15);
+            color: #d8b4fe;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+        }
+
+        footer {
+            border-top: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            text-align: center;
+            background: #06060a;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+
+    <nav>
+        <div class="nav-container">
+            <div class="brand">
+                <i class="fa-solid fa-book-open-reader"></i>
+                <span>PageStream Admin</span>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="nav-btn btn-secondary">
+                    <i class="fa-solid fa-house"></i> Home
+                </a>
+                <a href="/admin/logout" class="nav-btn btn-danger">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="welcome-header">
+            <h1>System Overview</h1>
+            <p>Monitor your web server status, files and active user database.</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-label">Total Registered Users</span>
+                <span class="stat-value">{{ total_users }}</span>
+                <span class="stat-icon"><i class="fa-solid fa-users"></i></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Authorized Users</span>
+                <span class="stat-value">{{ authorized_users }}</span>
+                <span class="stat-icon"><i class="fa-solid fa-user-shield"></i></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">Total Files Saved</span>
+                <span class="stat-value">{{ total_files }}</span>
+                <span class="stat-icon"><i class="fa-solid fa-file-invoice"></i></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">CPU Usage</span>
+                <span class="stat-value">{{ cpu }}%</span>
+                <div class="metric-progress">
+                    <div class="metric-bar bar-cpu" style="width: {{ cpu }}%"></div>
+                </div>
+                <span class="stat-icon"><i class="fa-solid fa-microchip"></i></span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-label">RAM Usage</span>
+                <span class="stat-value">{{ ram }}%</span>
+                <div class="metric-progress">
+                    <div class="metric-bar bar-ram" style="width: {{ ram }}%"></div>
+                </div>
+                <span class="stat-icon"><i class="fa-solid fa-memory"></i></span>
+            </div>
+        </div>
+
+        <div class="dashboard-sections">
+            <div class="section-card">
+                <h2><i class="fa-solid fa-cubes"></i> Quick Actions</h2>
+                <div class="quick-actions">
+                    <a href="/admin/files" class="action-link">
+                        <div class="action-info">
+                            <span class="action-icon"><i class="fa-solid fa-folder-open"></i></span>
+                            <span>Manage Files</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                    <a href="/admin/users" class="action-link">
+                        <div class="action-info">
+                            <span class="action-icon"><i class="fa-solid fa-users-gear"></i></span>
+                            <span>Manage Users</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="section-card">
+                <h2><i class="fa-solid fa-chart-line"></i> Recent System Health</h2>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-detail">
+                            <span class="activity-title">Uptime</span>
+                            <span class="activity-time">{{ uptime }}</span>
+                        </div>
+                        <span class="activity-badge">Active</span>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-detail">
+                            <span class="activity-title">Telegram Clients</span>
+                            <span class="activity-time">Active connections</span>
+                        </div>
+                        <span class="activity-badge">{{ active_clients }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 PageStream. Powered by <a href="https://github.com/muhammedadnank/Smart-Book-to-Link" target="_blank" rel="noopener">PageStream</a>.</p>
+    </footer>
+</body>
+</html>
