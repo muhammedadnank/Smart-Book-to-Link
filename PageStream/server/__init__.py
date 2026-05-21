@@ -7,4 +7,10 @@ from .stream_routes import routes
 async def web_server():
     web_app = web.Application(client_max_size=50 * 1024 * 1024)
     web_app.add_routes(routes)
+    
+    # Add static route for assets
+    import os
+    if os.path.isdir("assets"):
+        web_app.router.add_static('/assets/', 'assets', name='assets')
+        
     return web_app

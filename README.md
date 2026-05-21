@@ -1,50 +1,43 @@
 <p align="center">
-  <img src="./assets/logo.png" alt="PageStream Logo" width="140" style="border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.5)">
+  <img src="./assets/logo.png" alt="PageStream Logo" width="160" style="border-radius: 32px; box-shadow: 0 16px 48px rgba(168,85,247,0.4)">
 </p>
 
-<h1 align="center">📄 PageStream</h1>
+<h1 align="center">✨ PageStream</h1>
 <p align="center">
-  <i>A premium, high-performance Telegram File-to-Link bot equipped with interactive in-browser eBook readers, an atmospheric audiobook/music player, and direct media streaming.</i>
+  <i>The ultimate premium Telegram File-to-Link streamer. Featuring a gorgeous glassmorphic UI, high-fidelity audio player, and interactive in-browser eBook reader.</i>
 </p>
 
 <p align="center">
-  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.13+"></a>
-  <a href="https://docs.kurigram.icu/"><img src="https://img.shields.io/badge/Kurigram-Latest-blueviolet?style=for-the-badge" alt="Kurigram"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=27ae60" alt="License"></a>
-  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main%20(stable)-2ecc71?style=for-the-badge&logo=git" alt="Branch: main"></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-1e293b?style=for-the-badge&logo=python&logoColor=6366f1" alt="Python 3.13+"></a>
+  <a href="https://docs.kurigram.icu/"><img src="https://img.shields.io/badge/Kurigram-Latest-1e293b?style=for-the-badge&logo=telegram&logoColor=a855f7" alt="Kurigram"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=10b981" alt="License"></a>
+  <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main-1e293b?style=for-the-badge&logo=git&logoColor=34d399" alt="Branch: main"></a>
   <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="28"></a>
 </p>
 
 ---
 
-## 🌟 Key Features
+## 🌟 Premium Features
 
 *   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser—all powered by a fast, modular **Jinja2 template architecture**.
 *   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music powered by **Vidstack**. Complete with interactive vinyl animations, a responsive mini-player (PiP), external app routing, and dynamic mobile-optimized UI.
 *   **⚡ High-Performance Engine**: Built on asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, and optimized streaming buffers.
+*   **🎨 Stunning Glassmorphic UI**: Beautiful, modern neon design system with smooth micro-animations, particle effects, and dynamic gradients.
 *   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
-*   **🛡️ Web Control Panel**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
+*   **🛡️ Secure Web Dashboard**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
 *   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
-*   **🎨 Premium UI/UX**: Includes dynamic colored inline buttons via Kurigram, responsive web templates, smooth Houdini CSS animations, and smart fallbacks for offline content.
-
----
-
-## 🖼️ Branding Asset
-
-* The repository now ships with a local logo at `assets/logo.png`, so README rendering no longer depends on an external CDN URL.
 
 ---
 
 ## 📑 Table of Contents
 
-1. [About The Project](#about-the-project)
-2. [How It Works](#how-it-works)
-3. [Supported Formats](#supported-formats)
-4. [Advanced Media Viewers](#advanced-media-viewers)
-5. [Configuration Guide](#configuration-guide)
-6. [Commands Reference](#commands-reference)
-7. [Deployment Guide](#deployment-guide)
-8. [Tech Stack](#tech-stack)
+1. [About The Project](#-about-the-project)
+2. [How It Works](#-how-it-works)
+3. [Supported Formats](#-supported-formats)
+4. [Advanced Media Viewers](#-advanced-media-viewers)
+5. [Configuration Guide](#-configuration-guide)
+6. [Commands Reference](#-commands-reference)
+7. [Deployment Guide](#-deployment-guide)
 
 ---
 
@@ -163,7 +156,6 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 ## 🤖 Commands Reference
 
 ### 👤 User Commands
-
 *   `/start` — Initialize the bot, view welcome greeting, or validate token.
 *   `/link [N]` — Generate link(s). Reply to a file with `/link` (or `/link 5` for next 5 files).
 *   `/help` — Display list of supported formats and usage guidelines.
@@ -172,7 +164,6 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 *   `/dc` — Query the Telegram datacenter hosting a specific file.
 
 ### 🔧 Admin Commands
-
 *   `/status` — Show system stats (CPU, memory load, network, uptime).
 *   `/stats` — View total database metrics (total users, total links).
 *   `/ban` / `/unban` — Block or unblock users from accessing services.
