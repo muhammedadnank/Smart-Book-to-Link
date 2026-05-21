@@ -87,6 +87,7 @@
         }
 
         .audio-card {
+            position: relative;
             width: 100%;
             max-width: 460px;
             margin: 0 16px; /* Robust centering inside flex container */
@@ -106,6 +107,7 @@
                 0 0 50px -10px var(--ember-glow),
                 inset 0 0 40px -20px var(--ember-dim);
             transition: transform 0.4s var(--ease-out-expo), box-shadow 0.4s var(--ease-out-expo);
+            z-index: 2;
         }
 
         .audio-card:hover {
@@ -114,6 +116,46 @@
                 0 40px 80px -20px rgba(0, 0, 0, 0.6),
                 0 0 65px -5px var(--ember-glow),
                 inset 0 0 40px -20px var(--ember-dim);
+        }
+
+        /* Breathing pulsing glow when track is playing */
+        .audio-card.playing {
+            animation: breathe-glow 6s ease-in-out infinite;
+        }
+
+        @keyframes breathe-glow {
+            0%, 100% {
+                box-shadow: 
+                    0 30px 60px -15px rgba(0, 0, 0, 0.5),
+                    0 0 50px -10px var(--ember-glow),
+                    inset 0 0 40px -20px var(--ember-dim);
+            }
+            50% {
+                box-shadow: 
+                    0 35px 70px -10px rgba(0, 0, 0, 0.6),
+                    0 0 70px -2px var(--ember-glow),
+                    inset 0 0 50px -15px var(--ember-dim);
+            }
+        }
+
+        /* Dynamic color-shifting floating background aura */
+        .ambient-aura {
+            position: absolute;
+            width: clamp(280px, 80vw, 550px);
+            height: clamp(280px, 80vw, 550px);
+            background: radial-gradient(circle, var(--ember-glow) 0%, transparent 70%);
+            opacity: 0.7;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 1;
+            animation: float-aura 15s ease-in-out infinite alternate;
+            transition: background 2s ease;
+        }
+
+        @keyframes float-aura {
+            0% { transform: translate(-30px, -30px) scale(0.9); }
+            50% { transform: translate(30px, 30px) scale(1.15); }
+            100% { transform: translate(-15px, 25px) scale(0.95); }
         }
 
         [data-theme="light"] .audio-card {
@@ -425,6 +467,7 @@
         <!-- Audio Player Screen -->
         <section class="cinema">
             <div class="screen">
+                <div class="ambient-aura"></div>
                 <div class="audio-card">
                     <div class="vinyl-container">
                         <div class="vinyl-record" id="vinylRecord">
@@ -723,15 +766,18 @@
                 const player = document.getElementById('player');
                 const vinyl = document.getElementById('vinylRecord');
                 const vinylCenter = document.querySelector('.vinyl-center');
+                const audioCard = document.querySelector('.audio-card');
                 if (player && vinyl) {
                     player.subscribe(({ paused }) => {
                         if (paused) {
                             vinyl.classList.remove('playing');
+                            if (audioCard) audioCard.classList.remove('playing');
                             // P2: reset center dot colour when paused
                             if (vinylCenter) vinylCenter.style.backgroundColor = '';
                             stopDynamicGlow();
                         } else {
                             vinyl.classList.add('playing');
+                            if (audioCard) audioCard.classList.add('playing');
                             // P2: highlight center dot with current ember colour when playing
                             if (vinylCenter) vinylCenter.style.backgroundColor = 'var(--ember)';
                             startDynamicGlow();
