@@ -44,7 +44,7 @@ async def get_force_channel_button(client: Client):
 async def help_callback(client: Client, callback_query: CallbackQuery):
     try:
         await callback_query.answer()
-        buttons = [[InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command")]]
+        buttons = [[InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command", style=ButtonStyle.SUCCESS)]]
         force_button = await get_force_channel_button(client)
         if force_button:
             buttons.append(force_button)

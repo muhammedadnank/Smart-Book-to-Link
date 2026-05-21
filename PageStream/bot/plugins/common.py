@@ -106,7 +106,7 @@ async def start_command(bot: Client, msg: Message):
     
     btns.extend([
         [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command", style=ButtonStyle.PRIMARY),
-         InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command")],
+         InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command", style=ButtonStyle.SUCCESS)],
         [InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link/", style=ButtonStyle.PRIMARY),
          InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel", style=ButtonStyle.DANGER)]
     ])
@@ -131,7 +131,7 @@ async def help_command(bot: Client, msg: Message):
         btns.append([InlineKeyboardButton(MSG_BUTTON_JOIN_CHANNEL.format(channel_title=title), url=link)])
     
     btns.extend([
-        [InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command"),
+        [InlineKeyboardButton(MSG_BUTTON_ABOUT, callback_data="about_command", style=ButtonStyle.SUCCESS),
          InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel", style=ButtonStyle.DANGER)]
     ])
     try:
