@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://cdn.jsdelivr.net/gh/fyaz05/Resources@main/FileToLink/logo.png" alt="PageStream Logo" width="140" style="border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.5)">
+  <img src="./assets/logo.png" alt="PageStream Logo" width="140" style="border-radius: 28px; box-shadow: 0 12px 40px rgba(0,0,0,0.5)">
 </p>
 
 <h1 align="center">📄 PageStream</h1>
@@ -26,6 +26,12 @@
 *   **🛡️ Web Control Panel**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
 *   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
 *   **🎨 Premium UI/UX**: Includes dynamic colored inline buttons via Kurigram, responsive web templates, smooth Houdini CSS animations, and smart fallbacks for offline content.
+
+---
+
+## 🖼️ Branding Asset
+
+* The repository now ships with a local logo at `assets/logo.png`, so README rendering no longer depends on an external CDN URL.
 
 ---
 
