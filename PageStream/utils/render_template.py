@@ -76,7 +76,7 @@ async def render_media_page(
         category = 'ebooks'
 
     if requested_action != 'stream' or category in ('archives', 'documents'):
-        template = template_env.get_template('dl.html')
+        template = template_env.get_template('viewers/dl.html')
         return await template.render_async(file_name=file_name, src=src)
 
     if category == 'ebooks':
@@ -90,7 +90,7 @@ async def render_media_page(
             else:
                 ebook_type = 'offline'
 
-        template = template_env.get_template('ebook.html')
+        template = template_env.get_template('viewers/ebook.html')
         return await template.render_async(
             file_name=file_name,
             src=f"{src}?disposition=inline",
@@ -98,14 +98,14 @@ async def render_media_page(
         )
 
     if category == 'audiobooks':
-        template = template_env.get_template('req.html')
+        template = template_env.get_template('viewers/req.html')
         return await template.render_async(
             heading=f"Listen to {file_name}",
             file_name=file_name,
             src=f"{src}?disposition=inline",
         )
 
-    template = template_env.get_template('dl.html')
+    template = template_env.get_template('viewers/dl.html')
     return await template.render_async(file_name=file_name, src=src)
 
 
