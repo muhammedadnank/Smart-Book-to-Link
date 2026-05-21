@@ -257,7 +257,8 @@ async def _serve_media_response(
 async def root_redirect(request):
     from PageStream.utils.render_template import template_env
     template = template_env.get_template('home.html')
-    rendered_home = await template.render_async(bot_username=StreamBot.username)
+    bot_uname = getattr(StreamBot, "username", "FileToLinkBot") or "FileToLinkBot"
+    rendered_home = await template.render_async(bot_username=bot_uname)
     return web.Response(
         text=rendered_home,
         content_type='text/html',

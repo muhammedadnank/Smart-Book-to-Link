@@ -50,7 +50,7 @@ def print_banner():
 ║ \/    \__,_|\__, |\___| \____/ \__|_|  \___|\__,_|_| |_| |_|      ║
 ║             |___/                                                 ║
 ║                                                                   ║
-║                  PageStream Bot v{VERSION}                        ║
+║                  PageStream Bot v{VERSION}                          ║
 ╚═══════════════════════════════════════════════════════════════════╝
 """
     print(banner)
@@ -132,6 +132,14 @@ async def start_services():
         site = web.TCPSite(app_runner, bind_address, Var.PORT)
         await site.start()
         print(f"   ✓ Web Server started on {bind_address}:{Var.PORT}")
+        
+        keepalive_task = asyncio.create_task(
+            ping_server(), name="keepalive_task"
+        )
+        print("   ✓ Keep-alive service started")
+        token_cleanup_task = asyncio.create_task(
+            schedule_token_cleanup(), name="token_cleanup_task"
+        )
     except Exception as e:
         logger.error(f"   ✖ Failed to start Web Server: {e}", exc_info=True)
         return
