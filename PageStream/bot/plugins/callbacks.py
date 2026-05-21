@@ -6,6 +6,7 @@ from pyrogram import Client, filters
 from pyrogram.errors import FloodWait, MessageNotModified, MessageDeleteForbidden
 from pyrogram.types import (CallbackQuery, InlineKeyboardButton,
                             InlineKeyboardMarkup)
+from pyrogram.enums import ButtonStyle
 
 from PageStream.bot import StreamBot
 from PageStream.utils.broadcast import broadcast_ids
@@ -47,7 +48,7 @@ async def help_callback(client: Client, callback_query: CallbackQuery):
         force_button = await get_force_channel_button(client)
         if force_button:
             buttons.append(force_button)
-        buttons.append([InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")])
+        buttons.append([InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel", style=ButtonStyle.DANGER)])
         try:
             await callback_query.message.edit_text(
                 text=MSG_HELP.format(max_files=Var.MAX_BATCH_FILES),
@@ -76,10 +77,10 @@ async def about_callback(client: Client, callback_query: CallbackQuery):
     try:
         await callback_query.answer()
         buttons = [
-            [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command")],
+            [InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command", style=ButtonStyle.PRIMARY)],
             [
-                InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link"),
-                InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")
+                InlineKeyboardButton(MSG_BUTTON_GITHUB, url="https://github.com/muhammedadnank/Smart-Book-to-Link", style=ButtonStyle.PRIMARY),
+                InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel", style=ButtonStyle.DANGER)
             ]
         ]
         try:
@@ -117,8 +118,8 @@ async def restart_broadcast_callback(client: Client, callback_query: CallbackQue
             await callback_query.answer(MSG_ERROR_BROADCAST_RESTART, show_alert=True)
         buttons = [
             [
-                InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command"),
-                InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel")
+                InlineKeyboardButton(MSG_BUTTON_GET_HELP, callback_data="help_command", style=ButtonStyle.PRIMARY),
+                InlineKeyboardButton(MSG_BUTTON_CLOSE, callback_data="close_panel", style=ButtonStyle.DANGER)
             ]
         ]
         try:

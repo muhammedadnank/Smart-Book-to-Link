@@ -8,6 +8,7 @@ from pyrogram import Client, enums, filters
 from pyrogram.errors import FloodWait, MessageNotModified, MessageDeleteForbidden, MessageIdInvalid
 from pyrogram.types import (InlineKeyboardButton, InlineKeyboardMarkup,
                             Message)
+from pyrogram.enums import ButtonStyle
 
 from PageStream.bot import StreamBot
 from PageStream.utils.bot_utils import (gen_canonical_links, gen_links, is_admin,
@@ -63,8 +64,8 @@ async def fwd_media(m_msg: Message) -> Optional[Message]:
 
 def get_link_buttons(links):
     return InlineKeyboardMarkup([[
-        InlineKeyboardButton(MSG_BUTTON_STREAM_NOW, url=links['stream_link']),
-        InlineKeyboardButton(MSG_BUTTON_DOWNLOAD,   url=links['online_link'])
+        InlineKeyboardButton(MSG_BUTTON_STREAM_NOW, url=links['stream_link'], style=ButtonStyle.SUCCESS),
+        InlineKeyboardButton(MSG_BUTTON_DOWNLOAD,   url=links['online_link'], style=ButtonStyle.PRIMARY)
     ]])
 
 
