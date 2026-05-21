@@ -623,14 +623,15 @@ def _rebuild_pyrogram_file_id(stored_file_id: str, file_ref_b64: str) -> str | N
             file_reference = base64.urlsafe_b64decode(file_ref_b64 + "=" * padding)
 
         # 4. Build Pyrogram FileId and encode
-        fid = FileId()
-        fid.file_type = FileType(file_type_int)
-        fid.dc_id = dc_id
-        fid.media_id = media_id
-        fid.access_hash = access_hash
-        fid.file_reference = file_reference
-        fid.major = 4
-        fid.minor = 22
+        fid = FileId(
+            major=4,
+            minor=22,
+            file_type=FileType(file_type_int),
+            dc_id=dc_id,
+            media_id=media_id,
+            access_hash=access_hash,
+            file_reference=file_reference
+        )
         return fid.encode()
     except Exception as e:
         logger.warning(f"_rebuild_pyrogram_file_id failed: {e}")
