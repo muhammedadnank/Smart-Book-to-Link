@@ -9,7 +9,7 @@
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-3776ab?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.13+"></a>
-  <a href="https://github.com/Mayuri-Chan/pyrofork"><img src="https://img.shields.io/badge/Pyrofork-2.3.69-e74c3c?style=for-the-badge" alt="Pyrofork"></a>
+  <a href="https://docs.kurigram.icu/"><img src="https://img.shields.io/badge/Kurigram-Latest-blueviolet?style=for-the-badge" alt="Kurigram"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=27ae60" alt="License"></a>
   <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main%20(stable)-2ecc71?style=for-the-badge&logo=git" alt="Branch: main"></a>
   <a href="https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link"><img src="https://render.com/images/deploy-to-render-button.svg" alt="Deploy to Render" height="28"></a>
@@ -19,13 +19,13 @@
 
 ### 🌟 Key Features
 
-*   **📚 In-Browser eBook Reader**: Open and read `.pdf`, `.epub`, and `.cbz` files seamlessly inside your browser with customizable light/sepia/dark themes.
+*   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser.
 *   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music, complete with interactive vinyl animations and responsive controls.
-*   **⚡ High Performance**: Powered by asynchronous Python (`aiohttp` + `pyrofork`), utilizing connection pooling, indexed database queries, and optimized buffers.
+*   **⚡ High Performance Engine**: Powered by asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, and optimized streaming buffers.
 *   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
 *   **🛡️ Web Control Panel**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
 *   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
-*   **🔁 Batch Generation**: Generate up to N streaming links concurrently in a single command.
+*   **🎨 Premium UI/UX**: Includes dynamic colored inline buttons via Kurigram, responsive web templates built with Jinja2 modular partials, and smart fallbacks for offline content.
 
 ---
 
@@ -50,28 +50,28 @@
 
 ## About The Project
 
-**PageStream** is designed to transform Telegram document uploads into clean, high-speed HTTP(S) streamable links. It targets literary, document, and archival files, ensuring that your books, audiobooks, and documents are instantly readable or playable on any device without downloading external files or leaving the web environment.
+**PageStream** transforms your Telegram document uploads into clean, high-speed HTTP(S) streamable links. By heavily leveraging modern browser APIs, the bot serves as an entire library management system—allowing users to read eBooks, manga, and listen to audiobooks instantly across all devices without requiring third-party applications.
 
 ### 💡 Ideal For
 
 | Audience | Use Case |
 | :--- | :--- |
-| **📖 E-Readers** | Read books & manga instantly in-browser on mobile or desktop |
-| **🎧 Audiobook Fans** | Listen to audio tracks with advanced playback speed and seek controls |
-| **📁 Libraries & Channels** | Distribute course resources, archives, and files with speed |
-| **🚀 Power Users** | Stream media files immediately, bypassing local client constraints |
+| **📖 E-Readers & Manga Fans** | Read standard books (EPUB, PDF, FB2, TXT, DjVu) or Manga (CBZ) right in Safari/Chrome. |
+| **🎧 Audiobook Listeners** | Stream massive audiobook files with speed/pitch controls and background play. |
+| **📁 Archival Channels** | Create custom link hubs for community courses, files, and documents. |
+| **🚀 Power Users** | Bypass Telegram's strict local download limitations and stream files concurrently. |
 
 ---
 
 ## How It Works
 
 ```
-User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Returns streaming / reader link
+User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Returns color-coded streaming link
 ```
 
 1.  **Format Validation**: Files are checked on-the-fly. Unsupported extensions are instantly rejected with clean visual cards.
 2.  **Persistent Storage**: Files are saved securely in your private Telegram `BIN_CHANNEL` which acts as the source host.
-3.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or direct download.
+3.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or triggers a direct download.
 
 ---
 
@@ -82,19 +82,23 @@ User uploads file → Bot validates format → Forwards to BIN_CHANNEL → Retur
 
 | Category | File Extensions | Associated Action / Viewer |
 | :--- | :--- | :--- |
-| **📚 eBooks** | `.pdf` `.epub` `.mobi` `.azw` `.azw3` `.djvu` `.fb2` `.lit` `.cbr` `.cbz` | **Interactive eBook / Comic Reader** |
+| **📚 In-Browser eBooks** | `.pdf` `.epub` `.txt` `.fb2` `.djvu` `.cbz` | **Interactive eBook / Comic Reader** |
+| **📲 Download-Only Books** | `.mobi` `.azw` `.azw3` `.lit` `.cbr` | Beautiful smart-prompt triggering download |
 | **🎧 Audiobooks** | `.mp3` `.m4b` `.m4a` `.ogg` `.flac` `.aac` `.wav` `.opus` | **Atmospheric Audio Player** |
-| **📄 Documents** | `.doc` `.docx` `.txt` `.rtf` `.odt` | Document preview card + download |
+| **📄 Documents** | `.doc` `.docx` `.rtf` `.odt` | Document preview card + download |
 | **📦 Archives** | `.zip` `.rar` `.7z` `.tar` `.gz` | Direct download redirection |
 
 ---
 
 ## Advanced Media Viewers
 
-### 📖 eBook & Comic Reader (`ebook.html`)
-*   **EPUBs**: Powered by `EPUB.js` featuring paginated text flow, Table of Contents navigation, font size adjustment, and light/dark/sepia styling.
-*   **PDFs**: Uses `PDF.js` rendering with hardware-accelerated canvas grids for crisp rendering.
-*   **CBZ Comics**: Uses client-side `JSZip` to extract pages on-the-fly, sort them alphabetically, and view as a continuous web-comic stream.
+### 📖 Modular eBook & Comic Reader (`ebook.html`)
+The reading engine dynamically loads the correct rendering module based on the file type, keeping memory footprints low.
+*   **EPUBs (`epub.js`)**: Paginated text flow, Table of Contents navigation, font size adjustment, and light/dark/sepia styling.
+*   **PDFs (`pdf.js`)**: Hardware-accelerated canvas grids for crisp document rendering with responsive pinch-to-zoom.
+*   **FB2 & TXT (`DOMParser`)**: Instant custom XML parsing for Russian FB2 formats generating automatic TOCs, alongside native adjustable text viewers.
+*   **DjVu (`djvu.js`)**: Native WASM-powered DjVu image generation.
+*   **CBZ Comics (`jszip`)**: Client-side extraction of CBZ archives on-the-fly, displaying images sequentially as a continuous web-comic stream.
 
 ### 🎧 Atmospheric Audio Player (`req.html`)
 *   Fully responsive audio control card featuring play, pause, seek, mute, volume, and playback speed adjustments.
@@ -236,13 +240,12 @@ python3 -m PageStream
 
 ## Tech Stack
 
-*   **Core MTProto Engine**: `pyrofork` + `tgcrypto`
-*   **Web Framework**: `aiohttp`
-*   **Templates**: `Jinja2`
+*   **Core MTProto Engine**: `Kurigram` (Modern Pyrogram branch) + `tgcrypto`
+*   **Web Framework**: `aiohttp` + `Jinja2` dynamic modular partials
 *   **Database Client**: `pymongo`
 *   **Event Loop**: `uvloop`
 *   **Performance Monitoring**: `psutil`
-*   **Security & Encryption**: Built-in time hashes and tokens
+*   **Media Readers**: `epub.js`, `pdf.js`, `jszip`, `djvu.js`, Native DOM Parsing
 
 ---
 
