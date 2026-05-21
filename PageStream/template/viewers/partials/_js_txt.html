@@ -1,0 +1,79 @@
+        errorScreen.querySelector('.error-icon').textContent  = '📚';
+        errorScreen.querySelector('.error-title').textContent = 'Offline Ebook Ready';
+    }
+
+    /* ── Plain Text Viewer ───────────────────────── */
+    async function loadText() {
+        document.getElementById('fit-divider').style.display = 'none';
+        document.getElementById('btn-fit-mode').style.display = 'none';
+        epubViewer.style.display  = 'none';
+        pdfViewer.style.display   = 'none';
+        textViewer.style.display  = 'block';
+
+        // Apply reader background to text-viewer
+        textViewer.style.cssText = `
+            display: block;
+            flex: 1;
+            overflow-y: auto;
+            padding: 32px 24px;
+            background: var(--reader-bg-dark);
+            color: var(--reader-text-dark);
+            font-family: var(--font-body);
+            font-size: 1rem;
+            line-height: 1.9;
+            white-space: pre-wrap;
+            word-break: break-word;
+            tab-size: 4;
+        `;
+        fontSizeBar.style.display = 'flex';
+
+        const loadingText = document.querySelector('#loading .loading-text');
+        loadingText.textContent = 'Loading text file…';
+        loading.classList.remove('hidden');
+
+        try {
+            const response = await fetch(FILE_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const text = await response.text();
+            loading.classList.add('hidden');
+            textViewer.textContent = text;
+            progressWrap.style.display = 'none';
+            prevBtn.style.display = 'none';
+            nextBtn.style.display = 'none';
+
+            // Font size buttons control textViewer font size
+            document.getElementById('font-dec').onclick = () => {
+                if (currentFontSize > 60) {
+                    currentFontSize -= 10;
+                    fontSizeVal.textContent = currentFontSize + '%';
+                    textViewer.style.fontSize = (currentFontSize / 100) + 'rem';
+                }
+            };
+            document.getElementById('font-inc').onclick = () => {
+                if (currentFontSize < 200) {
+                    currentFontSize += 10;
+                    fontSizeVal.textContent = currentFontSize + '%';
+                    textViewer.style.fontSize = (currentFontSize / 100) + 'rem';
+                }
+            };
+
+            // Theme buttons control textViewer background
+            document.getElementById('btn-theme-light').onclick = () => {
+                textViewer.style.background = '#f7f4ef';
+                textViewer.style.color = '#1a1714';
+            };
+            document.getElementById('btn-theme-sepia').onclick = () => {
+                textViewer.style.background = '#f5ecd7';
+                textViewer.style.color = '#3b2e1a';
+            };
+            document.getElementById('btn-theme-dark').onclick = () => {
+                textViewer.style.background = '#1c1a25';
+                textViewer.style.color = '#e0dde8';
+            };
+
+            // Populate TOC from line headings or none
+            tocList.innerHTML = '<li class="toc-item"><a href="#" style="font-style:italic;color:var(--text-muted)">Plain text file</a></li>';
+        } catch (err) {
+            showError('Could not load text file: ' + err.message);
+        }
+    }

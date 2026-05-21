@@ -1,0 +1,57 @@
+    /* ── Touch swipe (mobile page turns) ────────── */
+    let _tx = 0, _ty = 0;
+    document.addEventListener('touchstart', e => {
+        _tx = e.changedTouches[0].clientX;
+        _ty = e.changedTouches[0].clientY;
+    }, { passive: true });
+    document.addEventListener('touchend', e => {
+        const dx = e.changedTouches[0].clientX - _tx;
+        const dy = e.changedTouches[0].clientY - _ty;
+        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 40) {
+            if (dx < 0) nextBtn.click();
+            else        prevBtn.click();
+        }
+    }, { passive: true });
+
+    /* ── Keyboard navigation ─────────────────────── */
+    document.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    prevBtn.click();
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  nextBtn.click();
+        if (e.key === 't' || e.key === 'T') sidebar.classList.toggle('hidden');
+    });
+
+    /* ── Window resize ───────────────────────────── */
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            if (FILE_TYPE === 'pdf' && pdfDoc) {
+                renderPdfPage(pdfPageNum);
+            } else if (FILE_TYPE === 'comic' && comicPages.length > 0) {
+                renderComicPage(comicPageNum);
+            }
+        }, 150);
+    });
+
+    /* ── Dispatch ────────────────────────────────── */
+    switch (FILE_TYPE) {
+        case 'epub':  loadEpub();  break;
+        case 'pdf':   loadPdf();   break;
+        case 'comic': loadComic(); break;
+        case 'txt':   loadText();  break;
+        case 'fb2':   loadFb2();   break;
+        case 'djvu':  loadDjvu();  break;
+        case 'mobi':
+            loadDownloadPrompt('mobi', 'MOBI/AZW files require a dedicated app like Kindle, Calibre, or FBReader to open. Press Download to save the file.');
+            break;
+        case 'cbr':
+            loadDownloadPrompt('cbr', 'CBR (RAR-compressed comic) cannot be extracted in the browser. Press Download to open it in a comic reader app like ComicRack or Kuboo.');
+            break;
+        case 'offline':
+        default:
+            loadOfflineMessage(
+                FILE_TYPE === 'offline'
+                    ? undefined
+                    : `The .${FILE_NAME.split('.').pop()} format is not supported for inline viewing.`
+            );
+    }

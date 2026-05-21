@@ -1,0 +1,374 @@
+    <script src="https://cdn.jsdelivr.net/npm/djvujs@0.5.3/dist/djvu.min.js"></script>
+
+    <style>
+        :root {
+            --bg: #0f0e17;
+            --surface: #1a1825;
+            --surface2: #221f30;
+            --border: #2e2a3d;
+            --accent: #e8c27a;
+            --accent2: #a78bfa;
+            --text: #e8e6f0;
+            --text-muted: #8b85a0;
+            --reader-bg: #f7f4ef;
+            --reader-text: #1a1714;
+            --reader-bg-dark: #1c1a25;
+            --reader-text-dark: #e0dde8;
+            --font-body: 'Lora', Georgia, serif;
+            --font-mono: 'IBM Plex Mono', monospace;
+            --sidebar-w: 260px;
+            --toolbar-h: 56px;
+            --radius: 8px;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ── Toolbar ─────────────────────────────────── */
+        .toolbar {
+            height: var(--toolbar-h);
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 16px;
+            flex-shrink: 0;
+            z-index: 100;
+        }
+
+        .toolbar-title {
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-style: italic;
+            color: var(--text-muted);
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .toolbar-title strong {
+            color: var(--text);
+            font-style: normal;
+            font-weight: 600;
+        }
+
+        .toolbar-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: var(--radius);
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-family: var(--font-mono);
+            transition: all 0.15s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+        .toolbar-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+            background: rgba(232, 194, 122, 0.08);
+        }
+        .toolbar-btn.active {
+            border-color: var(--accent2);
+            color: var(--accent2);
+            background: rgba(167, 139, 250, 0.1);
+        }
+        .toolbar-btn svg { width: 15px; height: 15px; fill: currentColor; flex-shrink: 0; }
+
+        .toolbar-divider {
+            width: 1px;
+            height: 28px;
+            background: var(--border);
+            margin: 0 4px;
+        }
+
+        .progress-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .progress-bar-outer {
+            width: 80px;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-bar-inner {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent2));
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* ── Layout ───────────────────────────────────── */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ── Sidebar (TOC) ────────────────────────────── */
+        .sidebar {
+            width: var(--sidebar-w);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.25s ease, width 0.25s ease;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .sidebar.hidden {
+            transform: translateX(-100%);
+            width: 0;
+        }
+
+        .sidebar-header {
+            padding: 14px 16px;
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toc-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding: 8px 0;
+        }
+        .toc-list::-webkit-scrollbar { width: 4px; }
+        .toc-list::-webkit-scrollbar-track { background: transparent; }
+        .toc-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .toc-item a {
+            display: block;
+            padding: 7px 16px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.83rem;
+            line-height: 1.4;
+            transition: all 0.12s ease;
+            border-left: 2px solid transparent;
+        }
+        .toc-item a:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.04);
+        }
+        .toc-item a.active {
+            color: var(--accent);
+            border-left-color: var(--accent);
+            background: rgba(232,194,122,0.06);
+        }
+        .toc-item.sub a { padding-left: 28px; font-size: 0.78rem; }
+
+        /* ── Reader area ──────────────────────────────── */
+        .reader-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .font-size-bar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+        .font-size-bar .label { margin-right: 4px; }
+        .font-btn {
+            background: var(--border);
+            border: none;
+            color: var(--text);
+            width: 26px; height: 26px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex; align-items: center; justify-content: center;
+            transition: background 0.12s;
+        }
+        .font-btn:hover { background: var(--accent); color: var(--bg); }
+        .font-size-val { min-width: 36px; text-align: center; }
+
+        #epub-viewer {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #pdf-viewer {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 16px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            background: #2a2838;
+        }
+        #pdf-viewer::-webkit-scrollbar { width: 6px; }
+        #pdf-viewer::-webkit-scrollbar-track { background: transparent; }
+        #pdf-viewer::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .pdf-page-wrap {
+            box-shadow: 0 4px 32px rgba(0,0,0,0.5);
+            border-radius: 3px;
+            overflow: hidden;
+            background: white;
+            max-width: 100%;
+        }
+        .pdf-page-wrap canvas { display: block; max-width: 100%; height: auto; }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(26,24,37,0.85);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            cursor: pointer;
+            width: 38px; height: 60px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: var(--radius);
+            backdrop-filter: blur(4px);
+            transition: all 0.15s ease;
+            z-index: 10;
+        }
+        .nav-arrow:hover { color: var(--accent); border-color: var(--accent); background: rgba(26,24,37,0.95); }
+        .nav-arrow svg { width: 18px; height: 18px; fill: currentColor; }
+        .nav-prev { left: 12px; }
+        .nav-next { right: 12px; }
+
+        .loading-overlay {
+            position: absolute; inset: 0;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            z-index: 50;
+            transition: opacity 0.4s ease;
+        }
+        .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+        .spinner {
+            width: 40px; height: 40px;
+            border: 2px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .loading-text {
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
+
+        .error-screen {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            padding: 40px;
+            text-align: center;
+            display: none;
+        }
+        .error-icon { font-size: 3rem; opacity: 0.5; }
+        .error-title { font-size: 1.2rem; color: var(--text); }
+        .error-desc { font-size: 0.87rem; color: var(--text-muted); max-width: 400px; line-height: 1.6; }
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 10px 22px;
+            background: linear-gradient(135deg, var(--accent), #d4a853);
+            color: var(--bg);
+            text-decoration: none;
+            border-radius: var(--radius);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 500;
+            transition: opacity 0.15s;
+        }
+        .download-btn:hover { opacity: 0.85; }
+
+        .kb-hint {
+            text-align: center;
+            padding: 6px;
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            opacity: 0.5;
+            border-top: 1px solid var(--border);
+        }
+
+        @media (max-width: 640px) {
+            .sidebar {
+                position: fixed;
+                top: var(--toolbar-h);
+                left: 0;
+                bottom: 0;
+                z-index: 200;
+                width: min(80vw, 260px);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.6);
+            }
+            .sidebar.hidden {
+                transform: translateX(-100%);
+                width: min(80vw, 260px); /* keep width so animation is smooth */
+            }
+            :root { --toolbar-h: 48px; }
+            .toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
+            .toolbar-title { display: none; }
+            .progress-wrap { display: none; }
+            .nav-arrow { width: 32px; height: 52px; }
+            #pdf-viewer { padding: 12px 8px; gap: 10px; }
+            .font-size-bar { padding: 5px 10px; font-size: 0.68rem; }
+        }
+
+        /* Overlay backdrop for sidebar on mobile */
+        .sidebar-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 190;
+        }
+        @media (max-width: 640px) {
+            .sidebar-backdrop.active { display: block; }
+        }
+    </style>

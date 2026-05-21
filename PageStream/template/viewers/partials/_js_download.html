@@ -1,0 +1,15 @@
+    /* ── Mobi / AZW / CBR — download prompt ─────── */
+    function loadDownloadPrompt(format, reason) {
+        document.getElementById('fit-divider').style.display = 'none';
+        document.getElementById('btn-fit-mode').style.display = 'none';
+        epubViewer.style.display  = 'none';
+        fontSizeBar.style.display = 'none';
+        pdfViewer.style.display   = 'none';
+        textViewer.style.display  = 'none';
+        loading.classList.add('hidden');
+        errorScreen.querySelector('.error-icon').textContent  = format === 'cbr' ? '🖼️' : '📖';
+        errorScreen.querySelector('.error-title').textContent = `${format.toUpperCase()} Format`;
+        errorDesc.textContent = reason;
+        errorScreen.style.display = 'flex';
+        tocList.innerHTML = `<li class="toc-item"><a href="#" style="font-style:italic;color:var(--text-muted)">Download to read</a></li>`;
+    }

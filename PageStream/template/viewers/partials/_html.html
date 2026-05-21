@@ -1,0 +1,92 @@
+<body>
+
+    <div class="toolbar">
+        <button class="toolbar-btn" id="btn-toc" title="Toggle Table of Contents">
+            <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            TOC
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <div class="toolbar-title">
+            <strong>{{ file_name }}</strong>
+        </div>
+
+        <div class="progress-wrap" id="progress-wrap" style="display:none">
+            <div class="progress-bar-outer">
+                <div class="progress-bar-inner" id="progress-bar"></div>
+            </div>
+            <span id="progress-text">0%</span>
+        </div>
+
+        <div class="toolbar-divider"></div>
+
+        <button class="toolbar-btn" id="btn-theme-light" title="Light theme">☀</button>
+        <button class="toolbar-btn" id="btn-theme-sepia" title="Sepia theme">📜</button>
+        <button class="toolbar-btn active" id="btn-theme-dark" title="Dark theme">🌙</button>
+
+        <div class="toolbar-divider" id="fit-divider" style="display:none"></div>
+        <button class="toolbar-btn" id="btn-fit-mode" title="Toggle Fit Page / Fit Width" style="display:none">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" id="fit-icon-page"><path d="M4 4h16v16H4V4zm2 2v12h12V6H6z"/></svg>
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" id="fit-icon-width" style="display:none"><path d="M2 4h20v2H2V4zm0 14h20v2H2v-2zm2-8h16v4H4v-4z"/></svg>
+            <span id="fit-text">Fit Page</span>
+        </button>
+
+        <div class="toolbar-divider"></div>
+
+        <a class="toolbar-btn" href="{{ src|safe }}" download="{{ file_name }}" title="Download file">
+            <svg viewBox="0 0 24 24"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v6h5.66V9h3.84L12 2z"/></svg>
+            Download
+        </a>
+    </div>
+
+    <!-- Mobile sidebar backdrop -->
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+    <div class="layout">
+        <nav class="sidebar hidden" id="sidebar">
+            <div class="sidebar-header">Table of Contents</div>
+            <ul class="toc-list" id="toc-list">
+                <li class="toc-item"><a href="#" style="color:var(--text-muted);font-style:italic">Loading…</a></li>
+            </ul>
+        </nav>
+
+        <div class="reader-wrap" id="reader-wrap">
+            <div class="font-size-bar" id="font-size-bar">
+                <span class="label">Font size:</span>
+                <button class="font-btn" id="font-dec">−</button>
+                <span class="font-size-val" id="font-size-val">100%</span>
+                <button class="font-btn" id="font-inc">+</button>
+            </div>
+
+            <!-- Reusable Loading overlay -->
+            <div class="loading-overlay" id="loading">
+                <div class="spinner"></div>
+                <div class="loading-text">Opening ebook…</div>
+            </div>
+
+            <div id="epub-viewer"></div>
+            <div id="pdf-viewer"></div>
+            <div id="text-viewer" style="display:none"></div>
+
+            <!-- Reusable navigation buttons -->
+            <button class="nav-arrow nav-prev" id="prev-btn" title="Previous page (←)">
+                <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            </button>
+            <button class="nav-arrow nav-next" id="next-btn" title="Next page (→)">
+                <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+            </button>
+
+            <div class="error-screen" id="error-screen">
+                <div class="error-icon">📖</div>
+                <div class="error-title">Unable to render this file</div>
+                <div class="error-desc" id="error-desc">This file format may not be supported for inline viewing.</div>
+                <a class="download-btn" href="{{ src|safe }}" download="{{ file_name }}">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v6h5.66V9h3.84L12 2z"/></svg>
+                    Download instead
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="kb-hint">← → arrow keys to turn pages &nbsp;·&nbsp; T toggle contents</div>
