@@ -17,6 +17,8 @@
             --sidebar-w: 260px;
             --toolbar-h: 56px;
             --radius: 8px;
+            /* H4: PDF viewer background — theme-switchable via JS */
+            --pdf-bg: #2a2838;
         }
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -105,6 +107,14 @@
             font-family: var(--font-mono);
             font-size: 0.72rem;
             color: var(--text-muted);
+            /* M3: animate in instead of instant display */
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s;
+        }
+        .progress-wrap.visible {
+            opacity: 1;
+            visibility: visible;
         }
         .progress-bar-outer {
             width: 80px;
@@ -144,6 +154,7 @@
             width: 0;
             opacity: 0;
             pointer-events: none;
+            visibility: hidden;
         }
 
         .sidebar-header {
@@ -164,7 +175,9 @@
         }
         .toc-list::-webkit-scrollbar { width: 4px; }
         .toc-list::-webkit-scrollbar-track { background: transparent; }
-        .toc-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+        /* H5: was var(--border) #2e2a3d which is nearly invisible against --surface #1a1825 */
+        .toc-list::-webkit-scrollbar-thumb { background: rgba(139, 133, 160, 0.4); border-radius: 2px; }
+        .toc-list::-webkit-scrollbar-thumb:hover { background: rgba(139, 133, 160, 0.7); }
 
         .toc-item a {
             display: block;
@@ -234,7 +247,8 @@
             flex-direction: column;
             align-items: center;
             gap: 16px;
-            background: #2a2838;
+            /* H4: use var(--pdf-bg) so JS can update it when theme changes */
+            background: var(--pdf-bg);
         }
         #pdf-viewer::-webkit-scrollbar { width: 6px; }
         #pdf-viewer::-webkit-scrollbar-track { background: transparent; }
@@ -262,13 +276,18 @@
             border-radius: var(--radius);
             backdrop-filter: blur(4px);
             transition: all 0.15s ease;
-            z-index: 10;
+            z-index: 5; /* M4: below sidebar z:100 */
         }
         .nav-arrow:hover { color: var(--accent); border-color: var(--accent); background: rgba(26,24,37,0.95); }
         .nav-arrow:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
         .nav-arrow svg { width: 18px; height: 18px; fill: currentColor; }
         .nav-prev { left: 12px; }
         .nav-next { right: 12px; }
+        /* M4: Hide prev arrow when sidebar open to avoid overlap */
+        .layout:has(.sidebar:not(.hidden)) .nav-prev {
+            opacity: 0;
+            pointer-events: none;
+        }
 
         .loading-overlay {
             position: absolute; inset: 0;
@@ -291,7 +310,13 @@
             animation: spin 0.8s linear infinite;
         }
         @media (prefers-reduced-motion: reduce) {
-            .spinner { animation: none; border-top-color: var(--accent); }
+            .spinner { display: none; }
+            .loading-text {
+                font-size: 0.88rem;
+                color: var(--accent);
+                letter-spacing: 0.08em;
+            }
+            .loading-text::after { content: '…'; }
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -353,19 +378,40 @@
                 z-index: 200;
                 width: min(80vw, 260px);
                 box-shadow: 4px 0 20px rgba(0,0,0,0.6);
-                /* On mobile we keep the sidebar width fixed and toggle visibility differently */
                 opacity: 1;
+                visibility: visible;
                 pointer-events: auto;
+                transform: translateX(0);
+                transition: transform 0.25s ease;
             }
             .sidebar.hidden {
                 width: min(80vw, 260px);
-                opacity: 0;
+                opacity: 1;
+                visibility: visible;
                 pointer-events: none;
                 transform: translateX(-100%);
-                transition: transform 0.25s ease, opacity 0.2s ease;
+                transition: transform 0.25s ease;
             }
             :root { --toolbar-h: 48px; }
-            .toolbar { overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
+            .toolbar {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                gap: 4px;
+                position: relative;
+            }
+            /* M2: Fade gradient hints at scrollable toolbar edge */
+            .toolbar::after {
+                content: '';
+                position: sticky;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                width: 28px;
+                flex-shrink: 0;
+                background: linear-gradient(to left, var(--surface) 40%, transparent);
+                pointer-events: none;
+                z-index: 10;
+            }
             .toolbar-title { display: none; }
             .progress-wrap { display: none; }
             .nav-arrow { width: 32px; height: 52px; }

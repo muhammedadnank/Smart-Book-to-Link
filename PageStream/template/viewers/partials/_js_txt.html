@@ -1,4 +1,4 @@
-        errorScreen.querySelector('.error-icon').textContent  = '📚';
+errorScreen.querySelector('.error-icon').textContent  = '📚';
         errorScreen.querySelector('.error-title').textContent = 'Offline Ebook Ready';
     }
 
@@ -37,7 +37,7 @@
             const text = await response.text();
             loading.classList.add('hidden');
             textViewer.textContent = text;
-            progressWrap.style.display = 'none';
+            progressWrap.classList.remove('visible');
             prevBtn.style.display = 'none';
             nextBtn.style.display = 'none';
 

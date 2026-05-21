@@ -1,4 +1,4 @@
-    function esc(str) {
+function esc(str) {
         return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     }
 
@@ -48,7 +48,7 @@
             djvuPage = 1;
 
             loading.classList.add('hidden');
-            progressWrap.style.display = 'flex';
+            progressWrap.classList.add('visible');
 
             await renderDjvuPage(djvuPage);
 
@@ -96,4 +96,3 @@
             console.error('DjVu page render error:', err);
         }
     }
-

@@ -1,4 +1,4 @@
-    /* ── Touch swipe (mobile page turns) ────────── */
+/* ── Touch swipe (mobile page turns) ────────── */
     let _tx = 0, _ty = 0;
     document.addEventListener('touchstart', e => {
         _tx = e.changedTouches[0].clientX;
@@ -34,6 +34,32 @@
     });
 
     /* ── Dispatch ────────────────────────────────── */
+    // H8: Show accurate loading label per format instead of always "Opening ebook…"
+    const loadingLabels = {
+        epub:  'Opening ebook…',
+        pdf:   'Rendering PDF…',
+        comic: 'Loading comic…',
+        txt:   'Loading text…',
+        fb2:   'Parsing FB2…',
+        djvu:  'Loading DjVu…'
+    };
+    const loadingTextEl = document.querySelector('.loading-text');
+    if (loadingTextEl) {
+        loadingTextEl.textContent = loadingLabels[FILE_TYPE] || 'Loading…';
+    }
+
+    // M5: Immediately hide format-irrelevant controls to avoid flash
+    const textFormats = ['epub', 'txt', 'fb2'];
+    if (!textFormats.includes(FILE_TYPE)) {
+        fontSizeBar.style.display = 'none';
+    }
+    if (textFormats.includes(FILE_TYPE)) {
+        const fitDivider = document.getElementById('fit-divider');
+        const fitBtn = document.getElementById('btn-fit-mode');
+        if (fitDivider) fitDivider.style.display = 'none';
+        if (fitBtn) fitBtn.style.display = 'none';
+    }
+
     switch (FILE_TYPE) {
         case 'epub':  loadEpub();  break;
         case 'pdf':   loadPdf();   break;

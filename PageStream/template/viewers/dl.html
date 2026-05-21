@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Downloading: {{ file_name }}</title>
-    <meta http-equiv="refresh" content="0;url={{ src|safe }}">
+    <meta name="color-scheme" content="dark">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -47,7 +47,6 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            animation: pulse 4s ease-in-out infinite alternate;
         }
 
         @keyframes pulse {
@@ -84,11 +83,14 @@
             font-size: 2.5rem;
             margin-bottom: 1rem;
             display: block;
-            animation: bounce 1.5s ease-in-out infinite;
         }
         @keyframes bounce {
             0%, 100% { transform: translateY(0); }
             50%       { transform: translateY(-6px); }
+        }
+        @media (prefers-reduced-motion: no-preference) {
+            .icon { animation: bounce 1.5s ease-in-out infinite; }
+            .ambient-glow { animation: pulse 4s ease-in-out infinite alternate; }
         }
 
         h2 {
@@ -133,6 +135,24 @@
             box-shadow: 0 6px 22px rgba(168, 85, 247, 0.5);
         }
         .btn-download:active { transform: translateY(0); }
+        .btn-download:focus-visible {
+            outline: 2px solid rgba(168, 85, 247, 0.8);
+            outline-offset: 3px;
+        }
+
+        /* M6: Light mode support */
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #f8f7f5;
+                --text-primary: #1a1a2e;
+                --text-secondary: #6b7280;
+                --glass-bg: rgba(255, 255, 255, 0.85);
+                --glass-border: rgba(0, 0, 0, 0.08);
+            }
+            .ambient-glow {
+                background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+            }
+        }
 
         /* Tablets and smaller */
         @media (max-width: 480px) {
@@ -147,14 +167,45 @@
         <div class="message">
             <span class="icon">📥</span>
             <h2>Preparing Download</h2>
-            <p>Your download for<br><span class="filename">{{ file_name }}</span><br>should start automatically.</p>
-            <a class="btn-download" href="{{ src|safe }}" download="{{ file_name }}">
+            <p>Your download for<br><span class="filename">{{ file_name }}</span><br>will start in <span id="countdown">3</span> second<span id="countdown-s">s</span>.</p>
+            <a class="btn-download" id="btn-download" href="{{ src|safe }}" download="{{ file_name }}">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
                 </svg>
-                Click Here If Not Started
+                <span id="btn-label">Download Now</span>
             </a>
         </div>
     </div>
+
+    <script>
+        (function () {
+            const src = '{{ src|safe }}';
+            const countdownEl = document.getElementById('countdown');
+            const countdownS  = document.getElementById('countdown-s');
+            const btnLabel    = document.getElementById('btn-label');
+            const btn         = document.getElementById('btn-download');
+            let count = 3;
+
+            const tick = setInterval(function () {
+                count--;
+                if (count > 0) {
+                    countdownEl.textContent = count;
+                    countdownS.textContent  = count === 1 ? ' second' : ' seconds';
+                } else {
+                    clearInterval(tick);
+                    countdownEl.parentElement.textContent = 'Download started — if it didn\'t, click the button below.';
+                    btnLabel.textContent = 'Download Again';
+                    window.location.href = src;
+                }
+            }, 1000);
+
+            // Manual click: clear timer, trigger immediately
+            btn.addEventListener('click', function () {
+                clearInterval(tick);
+                countdownEl.parentElement.textContent = 'Download started — if it didn\'t, click the button below.';
+                btnLabel.textContent = 'Download Again';
+            });
+        })();
+    </script>
 </body>
 </html>

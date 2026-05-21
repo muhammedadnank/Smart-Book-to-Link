@@ -1,4 +1,4 @@
-    /* ── PDF ──────────────────────────────────────── */
+/* ── PDF ──────────────────────────────────────── */
     let pdfDoc = null;
     let pdfPageNum = 1;
     let pdfRendering = false;
@@ -42,7 +42,7 @@
             pdfDoc = await loadingTask.promise;
 
             loading.classList.add('hidden');
-            progressWrap.style.display = 'flex';
+            progressWrap.classList.add('visible');
             
             pdfPageNum = 1;
             renderPdfPage(pdfPageNum);

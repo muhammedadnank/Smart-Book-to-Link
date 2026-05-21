@@ -1,4 +1,4 @@
-    /* ── Comic (CBZ only) ─────────────────────────── */
+/* ── Comic (CBZ only) ─────────────────────────── */
     let comicPages = [];
     let comicPageNum = 0;
 
@@ -54,7 +54,7 @@
             comicPageNum = 0;
 
             loading.classList.add('hidden');
-            progressWrap.style.display = 'flex';
+            progressWrap.classList.add('visible');
             
             renderComicPage(comicPageNum);
 

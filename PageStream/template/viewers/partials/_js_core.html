@@ -45,8 +45,16 @@ const sidebar      = document.getElementById('sidebar');
         dark:  { background: '#1c1a25', color: '#e0dde8' }
     };
     function applyEpubTheme(name) {
-        document.querySelectorAll('[id^=btn-theme]').forEach(b => b.classList.remove('active'));
-        document.getElementById('btn-theme-' + name).classList.add('active');
+        document.querySelectorAll('[id^=btn-theme]').forEach(b => {
+            b.classList.remove('active');
+            b.setAttribute('aria-pressed', 'false');
+        });
+        const active = document.getElementById('btn-theme-' + name);
+        active.classList.add('active');
+        active.setAttribute('aria-pressed', 'true');
+        // H4: keep PDF viewer background in sync with selected theme
+        const pdfBgs = { light: '#e8e4dc', sepia: '#e8dcc8', dark: '#2a2838' };
+        document.documentElement.style.setProperty('--pdf-bg', pdfBgs[name] || '#2a2838');
         if (!epubRendition) return;
         const t = THEMES[name];
         epubRendition.themes.default({
@@ -89,6 +97,13 @@ const sidebar      = document.getElementById('sidebar');
     });
     document.getElementById('font-inc').addEventListener('click', () => {
         if (currentFontSize < 200) { currentFontSize += 10; updateFontSize(); }
+    });
+    /* P4: Keyboard shortcuts for font size (text formats only) */
+    document.addEventListener('keydown', e => {
+        if (!['epub', 'txt', 'fb2'].includes(FILE_TYPE)) return;
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+        if (e.key === '+' || e.key === '=') document.getElementById('font-inc').click();
+        if (e.key === '-' || e.key === '_') document.getElementById('font-dec').click();
     });
 
     /* ── Error screen ── */

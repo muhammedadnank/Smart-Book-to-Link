@@ -1,5 +1,4 @@
-
-    /* ── FB2 Viewer ──────────────────────────────── */
+/* ── FB2 Viewer ──────────────────────────────── */
     async function loadFb2() {
         document.getElementById('fit-divider').style.display = 'none';
         document.getElementById('btn-fit-mode').style.display = 'none';
@@ -41,7 +40,7 @@
             const html = fb2ToHtml(doc);
             textViewer.innerHTML = html;
             loading.classList.add('hidden');
-            progressWrap.style.display = 'none';
+            progressWrap.classList.remove('visible');
             prevBtn.style.display = 'none';
             nextBtn.style.display = 'none';
 
@@ -117,4 +116,3 @@
         }
         return out;
     }
-

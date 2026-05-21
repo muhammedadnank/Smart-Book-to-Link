@@ -1,4 +1,4 @@
-        return allChunks.buffer;
+return allChunks.buffer;
     }
 
     /* ── EPUB ─────────────────────────────────────── */
@@ -48,7 +48,7 @@
 
             book.ready.then(() => {
                 loading.classList.add('hidden');
-                progressWrap.style.display = 'flex';
+                progressWrap.classList.add('visible');
                 prevBtn.onclick = () => rendition.prev();
                 nextBtn.onclick = () => rendition.next();
                 return book.loaded.navigation;
