@@ -22,7 +22,7 @@
     <!-- EPUB.js -->
     <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
     <!-- DjVu.js -->
-    <script src="https://cdn.jsdelivr.net/npm/djvujs@0.5.3/dist/djvu.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/djvujs@0.5.3/dist/djvu.min.js" defer onerror="console.warn('DjVu.js unavailable — DjVu files will show download prompt.')"></script>
 
     {% include 'viewers/partials/_styles.html' %}
 </head>
