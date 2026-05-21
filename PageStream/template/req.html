@@ -185,6 +185,17 @@
         /* Vidstack audio layout styling customization */
         media-player {
             height: auto !important;
+            --media-background: transparent;
+        }
+
+        /* Hide the huge default headphone artwork placeholder */
+        media-player::part(artwork),
+        media-player::part(poster),
+        media-audio-layout::part(artwork),
+        media-audio-layout::part(poster),
+        .vds-artwork,
+        .vds-poster {
+            display: none !important;
         }
 
         /* Hide background message icon on audio layout */
