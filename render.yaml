@@ -1,7 +1,7 @@
 services:
   - type: web
     name: smart-book-to-link
-    # Change runtime to docker if you want to deploy using the Dockerfile
+    # Change runtime to docker and add dockerfilePath: docker/Dockerfile if you want to deploy using Docker
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt

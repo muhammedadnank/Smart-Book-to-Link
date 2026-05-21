@@ -191,7 +191,7 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 
 ---
 
-### 🐳 Docker
+### 🐳 Docker & Docker Compose
 
 ```bash
 # 1. Clone the repository
@@ -202,9 +202,12 @@ cd Smart-Book-to-Link
 cp config_sample.env config.env
 nano config.env
 
-# 3. Run container
-docker build -t pagestream .
-docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
+# 3. Run with Docker Compose (Recommended)
+docker-compose up -d --build
+
+# OR Run manually without compose:
+# docker build -f docker/Dockerfile -t pagestream .
+# docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
 ```
 
 ---
