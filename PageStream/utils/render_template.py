@@ -89,9 +89,10 @@ async def render_media_page(
     requested_action: str | None = None,
     mime_type: str | None = None,
 ) -> str:
-    # Check if SPA is available and should be served
+    # Check if SPA is available (locally or hosted externally via FRONTEND_URL) and should be served
     import os
-    if os.path.exists("frontend/dist/index.html"):
+    frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+    if frontend_url or os.path.exists("frontend/dist/index.html"):
         from aiohttp import web
         category = get_file_category(file_name)
         ebook_type = _get_ebook_type(file_name, mime_type)
@@ -102,12 +103,13 @@ async def render_media_page(
         encoded_src = urllib.parse.quote(src)
         
         if category == 'ebooks':
-            redirect_url = f"/watch/ebook?file_name={encoded_fn}&src={encoded_src}"
+            path = f"/watch/ebook?file_name={encoded_fn}&src={encoded_src}"
         elif category == 'audiobooks':
-            redirect_url = f"/watch/audio?file_name={encoded_fn}&src={encoded_src}"
+            path = f"/watch/audio?file_name={encoded_fn}&src={encoded_src}"
         else:
-            redirect_url = f"/watch/download?file_name={encoded_fn}&src={encoded_src}"
+            path = f"/watch/download?file_name={encoded_fn}&src={encoded_src}"
             
+        redirect_url = f"{frontend_url}{path}" if frontend_url else path
         raise web.HTTPFound(redirect_url)
 
     # NOTE: src must be a pre-encoded URL. Templates use |safe to avoid double-encoding.
