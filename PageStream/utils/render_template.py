@@ -83,6 +83,105 @@ def _get_ebook_type(file_name: str, mime_type: str | None = None) -> str | None:
     return None
 
 
+def render_fallback_page(file_name: str, src: str, category: str) -> str:
+    return f"""
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Download {file_name}</title>
+        <style>
+            body {{
+                background: linear-gradient(135deg, #0f172a, #1e1b4b);
+                color: #f8fafc;
+                font-family: system-ui, -apple-system, sans-serif;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                margin: 0;
+                padding: 1rem;
+                box-sizing: border-box;
+            }}
+            .card {{
+                background: rgba(255, 255, 255, 0.03);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 24px;
+                padding: 3rem 2rem;
+                max-width: 500px;
+                width: 100%;
+                text-align: center;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            }}
+            .icon {{
+                font-size: 3.5rem;
+                margin-bottom: 1.5rem;
+                display: inline-block;
+            }}
+            h1 {{
+                font-size: 1.6rem;
+                margin: 0 0 1rem;
+                font-weight: 700;
+                line-height: 1.4;
+                word-break: break-all;
+                background: linear-gradient(to right, #38bdf8, #818cf8);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }}
+            .meta {{
+                font-size: 0.9rem;
+                color: #94a3b8;
+                margin-bottom: 2.5rem;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+            }}
+            .btn {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                background: linear-gradient(135deg, #6366f1, #4f46e5);
+                color: white;
+                text-decoration: none;
+                padding: 1rem 2rem;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.2s;
+                box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+                width: 100%;
+                box-sizing: border-box;
+            }}
+            .btn:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+            }}
+            .btn:active {{
+                transform: translateY(0);
+            }}
+            .hint {{
+                margin-top: 2rem;
+                font-size: 0.8rem;
+                color: #64748b;
+                line-height: 1.5;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <span class="icon">📦</span>
+            <h1>{file_name}</h1>
+            <div class="meta">{category}</div>
+            <a href="{src}" class="btn" download>Download File</a>
+            <div class="hint">
+                Note: For streaming books or audio, please configure your frontend Vercel URL in the environment settings (FRONTEND_URL).
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+
+
 async def render_media_page(
     file_name: str,
     src: str,
@@ -118,37 +217,41 @@ async def render_media_page(
     if ebook_type:
         category = 'ebooks'
 
-    if requested_action != 'stream' or category in ('archives', 'documents'):
+    try:
+        if requested_action != 'stream' or category in ('archives', 'documents'):
+            template = template_env.get_template('viewers/dl.html')
+            return await template.render_async(file_name=file_name, src=src)
+
+        if category == 'ebooks':
+            if not ebook_type:
+                lower_name = file_name.lower()
+                if lower_name.endswith('.cbz'):
+                    ebook_type = 'comic'
+                elif lower_name.endswith('.cbr'):
+                    ebook_type = 'cbr'
+                else:
+                    ebook_type = 'offline'
+
+            template = template_env.get_template('viewers/ebook.html')
+            return await template.render_async(
+                file_name=file_name,
+                src=f"{src}?disposition=inline",
+                file_type=ebook_type,
+            )
+
+        if category == 'audiobooks':
+            template = template_env.get_template('viewers/req.html')
+            return await template.render_async(
+                heading=f"Listen to {file_name}",
+                file_name=file_name,
+                src=f"{src}?disposition=inline",
+            )
+
         template = template_env.get_template('viewers/dl.html')
         return await template.render_async(file_name=file_name, src=src)
-
-    if category == 'ebooks':
-        if not ebook_type:
-            lower_name = file_name.lower()
-            if lower_name.endswith('.cbz'):
-                ebook_type = 'comic'
-            elif lower_name.endswith('.cbr'):
-                ebook_type = 'cbr'
-            else:
-                ebook_type = 'offline'
-
-        template = template_env.get_template('viewers/ebook.html')
-        return await template.render_async(
-            file_name=file_name,
-            src=f"{src}?disposition=inline",
-            file_type=ebook_type,
-        )
-
-    if category == 'audiobooks':
-        template = template_env.get_template('viewers/req.html')
-        return await template.render_async(
-            heading=f"Listen to {file_name}",
-            file_name=file_name,
-            src=f"{src}?disposition=inline",
-        )
-
-    template = template_env.get_template('viewers/dl.html')
-    return await template.render_async(file_name=file_name, src=src)
+    except Exception as e:
+        logger.warning(f"Templates not found or failed to load. Falling back to inline HTML. Error: {e}")
+        return render_fallback_page(file_name, src, category)
 
 
 async def render_page(

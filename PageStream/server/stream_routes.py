@@ -257,18 +257,73 @@ async def _serve_media_response(
 
 @routes.get("/", allow_head=True)
 async def root_redirect(request):
-    from PageStream.utils.render_template import template_env
-    template = template_env.get_template('pages/home.html')
+    import os
+    frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+    if frontend_url:
+        raise web.HTTPFound(frontend_url)
+    if os.path.exists("frontend/dist/index.html"):
+        return web.FileResponse("frontend/dist/index.html")
+
     bot_uname = getattr(StreamBot, "username", "FileToLinkBot") or "FileToLinkBot"
-    rendered_home = await template.render_async(bot_username=bot_uname)
-    return web.Response(
-        text=rendered_home,
-        content_type='text/html',
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "X-Content-Type-Options": "nosniff"
-        }
-    )
+    try:
+        from PageStream.utils.render_template import template_env
+        template = template_env.get_template('pages/home.html')
+        rendered_home = await template.render_async(bot_username=bot_uname)
+        return web.Response(
+            text=rendered_home,
+            content_type='text/html',
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "X-Content-Type-Options": "nosniff"
+            }
+        )
+    except Exception:
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{bot_uname}</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+                body {{
+                    background: #0a0a16;
+                    color: #fff;
+                    font-family: system-ui, -apple-system, sans-serif;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    margin: 0;
+                }}
+                .card {{
+                    background: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(10px);
+                    padding: 2.5rem;
+                    border-radius: 16px;
+                    text-align: center;
+                    max-width: 400px;
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }}
+                h1 {{ margin: 0 0 1rem; font-size: 1.8rem; color: #a855f7; }}
+                p {{ color: #9ca3af; line-height: 1.6; margin: 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>{bot_uname}</h1>
+                <p>PageStream Media Streaming backend is running successfully. Please access the bot on Telegram or use the configured frontend.</p>
+            </div>
+        </body>
+        </html>
+        """
+        return web.Response(
+            text=html,
+            content_type='text/html',
+            headers={
+                "Access-Control-Allow-Origin": "*",
+                "X-Content-Type-Options": "nosniff"
+            }
+        )
 
 
 @routes.get("/status", allow_head=True)
@@ -445,9 +500,14 @@ async def canonical_media_delivery(request: web.Request):
 
 def is_spa_available() -> bool:
     import os
-    return os.path.exists("frontend/dist/index.html")
+    return bool(os.getenv("FRONTEND_URL", "").strip() or os.path.exists("frontend/dist/index.html"))
 
 async def serve_spa_index(request: web.Request):
+    import os
+    frontend_url = os.getenv("FRONTEND_URL", "").rstrip("/")
+    if frontend_url:
+        path = request.path
+        raise web.HTTPFound(f"{frontend_url}{path}")
     return web.FileResponse("frontend/dist/index.html")
 
 def is_admin_session(request: web.Request) -> bool:
