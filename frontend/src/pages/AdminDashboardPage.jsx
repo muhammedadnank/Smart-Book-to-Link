@@ -54,64 +54,53 @@ export default function AdminDashboardPage({ navigate }) {
         ) : (
           <>
             {/* Stats Grid */}
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: "1.5rem",
-                marginBottom: "2.5rem",
-              }}
-            >
-              <div className="glass-card" style={{ display: "flex", flexDirection: "column", padding: "1.5rem", position: "relative" }}>
+            <div className="admin-stats-grid">
+              <div className="stat-card">
                 <span className="stat-label">Total Registered Users</span>
                 <span className="stat-value">{stats.total_users}</span>
-                <Users size={32} style={{ position: "absolute", right: "20px", bottom: "20px", color: "rgba(255,255,255,0.03)" }} />
+                <Users size={32} className="stat-card-icon" />
               </div>
 
-              <div className="glass-card" style={{ display: "flex", flexDirection: "column", padding: "1.5rem", position: "relative" }}>
+              <div className="stat-card">
                 <span className="stat-label">Authorized Users</span>
                 <span className="stat-value">{stats.authorized_users}</span>
-                <ShieldCheck size={32} style={{ position: "absolute", right: "20px", bottom: "20px", color: "rgba(255,255,255,0.03)" }} />
+                <ShieldCheck size={32} className="stat-card-icon" />
               </div>
 
-              <div className="glass-card" style={{ display: "flex", flexDirection: "column", padding: "1.5rem", position: "relative" }}>
+              <div className="stat-card">
                 <span className="stat-label">Total Files Saved</span>
                 <span className="stat-value">{stats.total_files}</span>
-                <FileText size={32} style={{ position: "absolute", right: "20px", bottom: "20px", color: "rgba(255,255,255,0.03)" }} />
+                <FileText size={32} className="stat-card-icon" />
               </div>
 
-              <div className="glass-card" style={{ display: "flex", flexDirection: "column", padding: "1.5rem", position: "relative" }}>
+              <div className="stat-card">
                 <span className="stat-label">CPU Usage</span>
                 <span className="stat-value">{stats.cpu}%</span>
                 <div className="metric-progress">
                   <div
-                    className="metric-bar bar-cpu"
+                    className="metric-bar"
                     style={{
                       width: `${stats.cpu}%`,
-                      height: "100%",
-                      borderRadius: "100px",
                       background: "linear-gradient(90deg, var(--accent-blue), var(--accent-purple))",
                     }}
                   ></div>
                 </div>
-                <Cpu size={32} style={{ position: "absolute", right: "20px", bottom: "20px", color: "rgba(255,255,255,0.03)" }} />
+                <Cpu size={32} className="stat-card-icon" />
               </div>
 
-              <div className="glass-card" style={{ display: "flex", flexDirection: "column", padding: "1.5rem", position: "relative" }}>
+              <div className="stat-card">
                 <span className="stat-label">RAM Usage</span>
                 <span className="stat-value">{stats.ram}%</span>
                 <div className="metric-progress">
                   <div
-                    className="metric-bar bar-ram"
+                    className="metric-bar"
                     style={{
                       width: `${stats.ram}%`,
-                      height: "100%",
-                      borderRadius: "100px",
                       background: "linear-gradient(90deg, #34d399, #059669)",
                     }}
                   ></div>
                 </div>
-                <HardDrive size={32} style={{ position: "absolute", right: "20px", bottom: "20px", color: "rgba(255,255,255,0.03)" }} />
+                <HardDrive size={32} className="stat-card-icon" />
               </div>
             </div>
 
@@ -130,9 +119,9 @@ export default function AdminDashboardPage({ navigate }) {
                   Quick Actions
                 </h2>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <button onClick={() => navigate("/admin/files")} className="action-link" style={{ cursor: "pointer", background: "none", border: "none", width: "100%", textAlign: "left" }}>
+                  <button onClick={() => navigate("/admin/files")} className="action-link">
                     <div className="action-info">
-                      <span className="action-icon" style={{ background: "rgba(168, 85, 247, 0.1)", color: "var(--accent-purple)", width: "38px", height: "38px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span className="action-icon" style={{ background: "rgba(168, 85, 247, 0.1)", color: "var(--accent-purple)" }}>
                         <FileText size={18} />
                       </span>
                       <span>Manage Files</span>
@@ -140,9 +129,9 @@ export default function AdminDashboardPage({ navigate }) {
                     <ChevronRight size={16} />
                   </button>
 
-                  <button onClick={() => navigate("/admin/users")} className="action-link" style={{ cursor: "pointer", background: "none", border: "none", width: "100%", textAlign: "left" }}>
+                  <button onClick={() => navigate("/admin/users")} className="action-link">
                     <div className="action-info">
-                      <span className="action-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--accent-blue)", width: "38px", height: "38px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span className="action-icon" style={{ background: "rgba(99, 102, 241, 0.1)", color: "var(--accent-blue)" }}>
                         <Users size={18} />
                       </span>
                       <span>Manage Users</span>
@@ -150,9 +139,9 @@ export default function AdminDashboardPage({ navigate }) {
                     <ChevronRight size={16} />
                   </button>
 
-                  <button onClick={() => navigate("/admin/logs")} className="action-link" style={{ cursor: "pointer", background: "none", border: "none", width: "100%", textAlign: "left" }}>
+                  <button onClick={() => navigate("/admin/logs")} className="action-link">
                     <div className="action-info">
-                      <span className="action-icon" style={{ background: "rgba(52, 211, 153, 0.1)", color: "#34d399", width: "38px", height: "38px", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span className="action-icon" style={{ background: "rgba(52, 211, 153, 0.1)", color: "#34d399" }}>
                         <Terminal size={18} />
                       </span>
                       <span>View Live Logs</span>
