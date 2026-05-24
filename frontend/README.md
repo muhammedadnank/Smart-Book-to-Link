@@ -95,11 +95,6 @@ The API routing is handled dynamically using a Vercel Edge Serverless Function (
 - **`vercel.json`** routes all incoming traffic to `/api/*`, `/f/*`, and `/status` to `/api/proxy`.
 - **`api/proxy.js`** reads the **`BACKEND_URL`** environment variable from your Vercel Dashboard and proxies the requests to the respective target dynamically.
 - All other routes are rewritten to `/index.html` to allow React Router to handle client-side URLs seamlessly.
-
-#### Setting up Vercel Environment Variables:
-Add the following variable in your Vercel Project settings:
-- **`BACKEND_URL`**: Set this to your production backend URL (e.g., `https://smart-book-to-link.onrender.com`).
-
 ---
 
 ## 🎨 Design System & CSS
