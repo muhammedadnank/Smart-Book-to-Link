@@ -111,3 +111,17 @@ class Var:
 
     ADMIN_PASSWORD: str = os.getenv("ADMIN_PASSWORD", "admin")
 
+    # CDN / Cloudflare Workers fallback URLs (optional, from filestreambot pattern).
+    # Set WORKERS_URL, WORKERS_URL_2, WORKERS_URL_3 to alternate fast-download origins.
+    # PageStream will randomly pick one when generating fast-download links.
+    _workers_raw: list[str] = [
+        u.strip()
+        for u in [
+            os.getenv("WORKERS_URL", ""),
+            os.getenv("WORKERS_URL_2", ""),
+            os.getenv("WORKERS_URL_3", ""),
+        ]
+        if u.strip()
+    ]
+    WORKERS_URLS: list[str] = [u.rstrip("/") for u in _workers_raw]
+

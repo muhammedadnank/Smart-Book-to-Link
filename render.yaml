@@ -40,3 +40,13 @@ services:
         value: "True"
       - key: SET_COMMANDS
         value: "True"
+      # Optional: Connection watchdog interval (seconds)
+      - key: CONNECTION_CHECK_INTERVAL
+        value: "300"
+      # Optional: CDN / Cloudflare Workers fast-download URLs (leave empty to disable)
+      - key: WORKERS_URL
+        sync: false
+      - key: WORKERS_URL_2
+        sync: false
+      - key: WORKERS_URL_3
+        sync: false

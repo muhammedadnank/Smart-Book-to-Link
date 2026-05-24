@@ -1,6 +1,7 @@
 # PageStream/utils/bot_utils.py
 
 import asyncio
+import random
 from typing import Any, Dict, Optional
 from urllib.parse import quote
 
@@ -35,7 +36,20 @@ async def _build_links(
     slink = f"{base_url}{stream_path}"
     olink = f"{base_url}{download_path}"
 
-    return {"stream_link": slink, "online_link": olink, "media_name": media_name, "media_size": media_size}
+    result: Dict[str, str] = {
+        "stream_link": slink,
+        "online_link": olink,
+        "media_name": media_name,
+        "media_size": media_size,
+    }
+
+    # CDN/Workers fast-download fallback (filestreambot pattern)
+    workers_urls = getattr(Var, "WORKERS_URLS", [])
+    if workers_urls:
+        cdn_base = random.choice(workers_urls)
+        result["fast_link"] = f"{cdn_base}{download_path}"
+
+    return result
 
 
 async def gen_canonical_links(

@@ -32,6 +32,7 @@ from PageStream.utils.logger import logger
 from PageStream.utils.messages import MSG_ADMIN_RESTART_DONE
 from PageStream.utils.rate_limiter import rate_limiter, request_executor
 from PageStream.utils.tokens import cleanup_expired_tokens
+from PageStream.utils.connection_monitor import monitor_connections
 from PageStream.vars import Var
 
 
@@ -217,6 +218,11 @@ async def start_services():
             request_executor(), name="request_executor_task"
         )
         print("   ✓ Request executor service started")
+
+        connection_monitor_task = asyncio.create_task(
+            monitor_connections(), name="connection_monitor_task"
+        )
+        print("   ✓ Connection monitor watchdog started")
     except Exception as e:
         logger.error(
             f"   ✖ Failed to start request executor: {e}", exc_info=True
@@ -235,7 +241,8 @@ async def start_services():
     background_tasks = [
         request_executor_task,
         keepalive_task,
-        token_cleanup_task
+        token_cleanup_task,
+        connection_monitor_task,
     ]
 
     try:

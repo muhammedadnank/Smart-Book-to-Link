@@ -4,7 +4,7 @@
 
 <h1 align="center">✨ PageStream</h1>
 <p align="center">
-  <i>The ultimate premium Telegram File-to-Link streamer. Featuring a gorgeous glassmorphic UI, high-fidelity audio player, and interactive in-browser eBook reader.</i>
+  <i>The ultimate premium Telegram File-to-Link streamer. Featuring a gorgeous glassmorphic UI, high-fidelity audio player, interactive in-browser eBook reader, and a resilient self-healing streaming engine.</i>
 </p>
 
 <p align="center">
@@ -21,7 +21,9 @@
 
 *   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser—all powered by a fast, modular **Jinja2 template architecture**.
 *   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music powered by **Vidstack**. Complete with interactive vinyl animations, a responsive mini-player (PiP), external app routing, and dynamic mobile-optimized UI.
-*   **⚡ High-Performance Engine**: Built on asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, and optimized streaming buffers.
+*   **⚡ High-Performance Engine**: Built on asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, **in-memory message caching** (30-min TTL), and optimized streaming buffers.
+*   **🔁 Self-Healing Connection Watchdog**: Automatically monitors all bot clients every 5 minutes. If connections drop and fail 3 consecutive checks, the service performs an emergency restart — zero manual intervention required.
+*   **🚀 CDN / Workers URL Fallback**: Optionally configure up to 3 Cloudflare Workers or CDN endpoints. PageStream randomly distributes fast-download links across them for maximum throughput and redundancy.
 *   **🎨 Stunning Glassmorphic UI**: Beautiful, modern neon design system with smooth micro-animations, particle effects, and dynamic gradients.
 *   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
 *   **🛡️ Secure Web Dashboard**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
@@ -52,7 +54,7 @@
 | **📖 E-Readers & Manga Fans** | Read standard books (EPUB, PDF, FB2, TXT, DjVu) or Manga (CBZ) right in Safari/Chrome. |
 | **🎧 Audiobook Listeners** | Stream massive audiobook files with speed/pitch controls, mini-player support, and background play. |
 | **📁 Archival Channels** | Create custom link hubs for community courses, files, and documents. |
-| **🚀 Power Users** | Bypass Telegram's strict local download limitations and stream files concurrently. |
+| **🚀 Power Users** | Bypass Telegram's strict local download limitations and stream files concurrently via CDN fallbacks. |
 
 ---
 
@@ -60,11 +62,14 @@
 
 ```
 User Uploads File → Bot Validates Format → Forwards to BIN_CHANNEL → Returns Streaming Link
+                                                                    ↘ Optional: CDN Fast Link
 ```
 
 1.  **Format Validation**: Files are checked on-the-fly. Unsupported extensions are instantly rejected with clean visual cards.
 2.  **Persistent Storage**: Files are saved securely in your private Telegram `BIN_CHANNEL` which acts as the source host.
-3.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or triggers a direct download.
+3.  **In-Memory Caching**: Resolved Telegram message objects are cached in RAM (30-min TTL) to eliminate redundant API calls during streaming.
+4.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or triggers a direct download.
+5.  **Self-Healing**: A background watchdog continuously pings all connected clients. On repeated failures, it triggers an automatic process restart.
 
 ---
 
@@ -148,8 +153,33 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 | `ADMIN_PASSWORD` | Password to access the `/admin` web control panel | `admin` |
 | `MULTI_TOKEN1` | Additional bot token to scale request handling | *(empty)* |
 | `MULTI_TOKEN2` | Second auxiliary token to scale request handling | *(empty)* |
+| `CONNECTION_CHECK_INTERVAL` | Seconds between connection watchdog pings | `300` |
+| `WORKERS_URL` | Primary CDN / Cloudflare Workers fast-download URL | *(empty)* |
+| `WORKERS_URL_2` | Secondary CDN fast-download URL | *(empty)* |
+| `WORKERS_URL_3` | Tertiary CDN fast-download URL | *(empty)* |
 
 </details>
+
+### ⚡ CDN / Workers URL Setup
+
+PageStream supports Cloudflare Workers or any CDN as an optional fast-download fallback, inspired by the [filestreambot](https://github.com/EL-Coders/filestreambot) pattern.
+
+When one or more `WORKERS_URL` variables are set, each generated link will include an **⚡ Fast Download** button in addition to the standard stream and download buttons. PageStream randomly picks from the configured CDN URLs per request for load distribution.
+
+**What is a Workers URL?**
+A [Cloudflare Worker](https://workers.cloudflare.com/) is a free serverless proxy that can forward requests to your PageStream server from Cloudflare's global edge network, giving users faster downloads via a CDN. The Worker URL simply needs to proxy requests through to your `BASE_URL` — no custom code required for basic pass-through.
+
+> [!NOTE]
+> `WORKERS_URL` can also be any other CDN, reverse proxy, or alternative domain that points to the same PageStream server. It doesn't have to be Cloudflare.
+
+```env
+WORKERS_URL=https://my-worker.username.workers.dev
+WORKERS_URL_2=https://cdn2.example.com
+WORKERS_URL_3=https://cdn3.example.com
+```
+
+> [!TIP]
+> Leave all `WORKERS_URL` variables empty to disable this feature. The bot works perfectly without them.
 
 ---
 

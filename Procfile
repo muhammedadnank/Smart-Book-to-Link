@@ -1,1 +1,1 @@
-web: python -m PageStream
+web: python3 -m PageStream

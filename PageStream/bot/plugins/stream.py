@@ -63,10 +63,16 @@ async def fwd_media(m_msg: Message) -> Optional[Message]:
 
 
 def get_link_buttons(links):
-    return InlineKeyboardMarkup([[
+    rows = [[
         InlineKeyboardButton(MSG_BUTTON_STREAM_NOW, url=links['stream_link'], style=ButtonStyle.SUCCESS),
         InlineKeyboardButton(MSG_BUTTON_DOWNLOAD,   url=links['online_link'], style=ButtonStyle.DANGER)
-    ]])
+    ]]
+    if links.get('fast_link'):
+        rows.append([
+            InlineKeyboardButton("⚡ Fast Download", url=links['fast_link'], style=ButtonStyle.PRIMARY)
+        ])
+    return InlineKeyboardMarkup(rows)
+
 
 
 async def validate_request_common(client: Client, message: Message) -> Optional[bool]:
