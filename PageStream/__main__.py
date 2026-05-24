@@ -223,44 +223,6 @@ async def start_services():
         )
         return
 
-        keepalive_task = asyncio.create_task(
-            ping_server(), name="keepalive_task"
-        )
-        print("   ✓ Keep-alive service started")
-        token_cleanup_task = asyncio.create_task(
-            schedule_token_cleanup(), name="token_cleanup_task"
-        )
-
-    except Exception as e:
-        logger.error(f"   ✖ Failed to start services: {e}", exc_info=True)
-        if 'request_executor_task' in locals() and not request_executor_task.done():
-            request_executor_task.cancel()
-            try:
-                await request_executor_task
-            except asyncio.CancelledError:
-                pass
-        try:
-            await StreamBot.stop()
-        except Exception:
-            pass
-        try:
-            await cleanup_clients()
-        except Exception:
-            pass
-        try:
-            await rate_limiter.shutdown()
-        except Exception:
-            pass
-        try:
-            await db.close()
-        except Exception as e:
-            logger.error(f"Error during database cleanup: {e}", exc_info=True)
-        try:
-            await drain_background_touch_tasks()
-        except Exception as e:
-            logger.error(f"Error during canonical touch task cleanup: {e}", exc_info=True)
-        return
-
     elapsed_time = (datetime.now() - start_time).total_seconds()
     print("╠═══════════════════════════════════════════════════════════╣")
     print(f"   ▶ Bot Name: {bot_info.first_name}")

@@ -1,7 +1,8 @@
 # PageStream/utils/custom_dl.py
 
 import asyncio
-from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Optional
+import time
+from typing import Any, AsyncGenerator, Awaitable, Callable, Dict, Optional, Tuple
 
 from pyrogram import Client
 from pyrogram.errors import FloodWait
@@ -14,13 +15,28 @@ from PageStream.vars import Var
 
 
 class ByteStreamer:
-    __slots__ = ('client', 'chat_id')
+    __slots__ = ('client', 'chat_id', 'message_cache')
 
     def __init__(self, client: Client) -> None:
         self.client = client
         self.chat_id = int(Var.BIN_CHANNEL)
+        self.message_cache: Dict[int, Tuple[Message, float]] = {}
+
+    def _cleanup_cache(self) -> None:
+        current_time = time.time()
+        keys_to_delete = [k for k, v in self.message_cache.items() if current_time - v[1] > 1800]
+        for k in keys_to_delete:
+            del self.message_cache[k]
 
     async def get_message(self, message_id: int) -> Message:
+        current_time = time.time()
+        if message_id in self.message_cache:
+            message, timestamp = self.message_cache[message_id]
+            if current_time - timestamp < 1800:
+                return message
+
+        self._cleanup_cache()
+
         while True:
             try:
                 message = await self.client.get_messages(self.chat_id, message_id)
@@ -34,6 +50,8 @@ class ByteStreamer:
 
         if not message or not message.media:
             raise FileNotFound(f"Message {message_id} not found")
+        
+        self.message_cache[message_id] = (message, current_time)
         return message
 
     async def stream_file(
