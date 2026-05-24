@@ -21,7 +21,7 @@
 
 ## 📖 Table of Contents
 
-1. [Dual-Engine Architecture](#-dual-engine-architecture)
+1. [Flexible Frontend Deployment Architectures](#-flexible-frontend-deployment-architectures)
 2. [Premium Features](#-premium-features)
 3. [Technology Stack](#-technology-stack)
 4. [Supported Formats](#-supported-formats)
@@ -35,30 +35,30 @@
 
 ---
 
-## ⚙️ Dual-Engine Architecture
+## 🌐 Flexible Frontend Deployment Architectures
 
-PageStream is designed with a unique **Dual-Engine Frontend Architecture** that adapts automatically based on compilation status:
+PageStream is designed to support two distinct deployment architectures based on your preference:
 
 ```
                       +-----------------------------+
                       | Incoming Stream/Admin Req   |
                       +--------------+--------------+
                                      |
-                      Is frontend/dist/index.html built?
+                         Is FRONTEND_URL configured?
                                      |
                     +----------------+----------------+
-                    | Yes                             | No
+                    | Yes (Option B)                  | No (Option A)
                     v                                 v
       +-----------------------------+   +-----------------------------+
-      |  🔥 React 19 SPA Engine     |   |  🍃 Jinja2 Template Engine  |
-      | - Clientside Route Matching |   | - Server-Side Generation     |
-      | - High-Fidelity App UI      |   | - No Compilation Required   |
-      | - JSON Rest API backend     |   | - Fast Server Fallback      |
+      |  ⚡ Bifurcated Deployment    |   |  📦 Monolithic Deployment    |
+      | - Frontend: Vercel SPA      |   | - Frontend: Local Dist SPA  |
+      | - Backend: Render Bot/API   |   | - Backend: Render Bot/API   |
+      | - Automatic API Proxying    |   | - Serves static SPA locally |
       +-----------------------------+   +-----------------------------+
 ```
 
-*   **React 19 SPA Mode (Default / Production)**: When the frontend files are compiled using Vite (`frontend/dist/`), the backend automatically bypasses legacy views. Streaming, previews, and management routes are redirected to the modern single-page app containing glassmorphic styling, smooth micro-animations, and client-side rendering.
-*   **Jinja2 Server-Side fallback**: If the frontend project is not built, the backend seamlessly falls back to server-rendered Jinja2 templates (`ebook.html`, `req.html`, legacy `/admin` dashboard), allowing the system to run out-of-the-box without node dependencies if needed.
+*   **Option A: Monolithic Single-Host (Default)**: The React 19 SPA is compiled locally (`frontend/dist/`) and served directly by the Python web server. Useful for VPS/Docker deployments where you want a single unified service.
+*   **Option B: Bifurcated Dual-Host (Recommended)**: The React SPA is hosted separately on Vercel/Netlify for instant delivery and edge caching, while the main bot and JSON API backend resides on Render or a VPS. Set the `FRONTEND_URL` environment variable to automatically redirect all stream and admin requests to the external host.
 
 ---
 
@@ -333,62 +333,70 @@ Rename `config_sample.env` to `config.env` and adjust variables:
 
 ## 🚀 Deployment Guide
 
-### Option A: Docker Compose (Recommended)
+### Option A: Monolithic Single-Host (Self-Hosted SPA)
 
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
-    cd Smart-Book-to-Link
-    ```
-2.  Configure environment:
-    ```bash
-    cp config_sample.env config.env
-    nano config.env
-    ```
-3.  Ensure the frontend is compiled for production (so Docker copies the built dist):
-    ```bash
-    cd frontend && npm install && npm run build && cd ..
-    ```
-4.  Run using Docker Compose:
-    ```bash
-    docker-compose up -d --build
-    ```
+In this mode, the React SPA is served directly by the Python web server. Useful for VPS/Docker setups.
 
-### Option B: Render.com (One-Click)
+#### Docker Compose
+1. Clone repository and navigate to root:
+   ```bash
+   git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
+   cd Smart-Book-to-Link
+   ```
+2. Build the SPA client assets:
+   ```bash
+   cd frontend && npm install && npm run build && cd ..
+   ```
+3. Set up the environment variables:
+   ```bash
+   cp config_sample.env config.env
+   nano config.env
+   ```
+4. Start with Docker Compose:
+   ```bash
+   docker-compose up -d --build
+   ```
 
-1.  Click the deploy button:
+#### Manual Virtualenv
+1. Setup Python virtual environment:
+   ```bash
+   python3 -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+   ```
+2. Build the frontend assets:
+   ```bash
+   cd frontend && npm install && npm run build && cd ..
+   ```
+3. Run the streaming backend:
+   ```bash
+   cp config_sample.env config.env
+   nano config.env
+   bash pagestream.sh
+   ```
 
-    [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
+---
 
-2.  Fill in the required Environment Variables.
-3.  Once the build finishes, copy the public URL, set it as `FQDN` in the settings, and re-trigger deployment.
+### Option B: Bifurcated Deployment (Vercel + Render - Recommended)
 
-### Option C: Manual Virtualenv Setup
+This mode splits the frontend to Vercel for high performance and the backend to Render.
 
-1.  Clone repository:
-    ```bash
-    git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
-    cd Smart-Book-to-Link
-    ```
-2.  Set up Virtual Environment:
-    ```bash
-    python3 -m venv venv
-    source venv/bin/activate
-    ```
-3.  Install Backend Dependencies:
-    ```bash
-    pip install -r requirements.txt
-    ```
-4.  Compile Frontend React SPA:
-    ```bash
-    cd frontend && npm install && npm run build && cd ..
-    ```
-5.  Start the service:
-    ```bash
-    cp config_sample.env config.env
-    nano config.env
-    bash pagestream.sh
-    ```
+#### 1. Deploy Frontend on Vercel
+1. Link your GitHub repository to Vercel.
+2. Select the **`frontend`** directory as the root of the Vercel project.
+3. Add the following **Environment Variable** on Vercel Dashboard:
+   * **`BACKEND_URL`**: Set this to your production backend URL (e.g. `https://your-app.onrender.com`).
+4. Click **Deploy**. Vercel will build the SPA and dynamically proxy API requests via Vercel Edge functions.
+
+#### 2. Deploy Backend on Render.com
+1. Click the deploy button:
+
+   [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
+
+2. Fill in the required environment variables. Ensure you include:
+   * **`FRONTEND_URL`**: Set this to your Vercel deployment URL (e.g. `https://your-app.vercel.app`).
+   * **`FQDN`**: Your Render backend domain (e.g. `your-app.onrender.com`).
+3. Deploy and let it run. The python backend will automatically redirect all stream viewers and admin panel hits to Vercel.
 
 ---
 
