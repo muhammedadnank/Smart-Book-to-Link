@@ -2,15 +2,15 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://your-render-backend-url.onrender.com/api/:path*"
+      "destination": "https://smart-book-to-link.onrender.com/api/:path*"
     },
     {
       "source": "/f/:path*",
-      "destination": "https://your-render-backend-url.onrender.com/f/:path*"
+      "destination": "https://smart-book-to-link.onrender.com/f/:path*"
     },
     {
       "source": "/status",
-      "destination": "https://your-render-backend-url.onrender.com/status"
+      "destination": "https://smart-book-to-link.onrender.com/status"
     },
     {
       "source": "/((?!api|f|status).*)",
