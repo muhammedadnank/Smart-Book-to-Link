@@ -91,9 +91,14 @@ On startup, the Python backend checks if `frontend/dist/index.html` exists:
 ### Serverless Vercel Deployment (Decoupled Mode)
 The frontend can be deployed independently to **Vercel** while communicating with a backend running on Render or elsewhere. 
 
-The API routing is handled by `vercel.json` rewrite rules:
-- Proxies `/api/*`, `/f/*`, and `/status` to the active backend instance (e.g., `https://smart-book-to-link.onrender.com`).
-- Rewrites all other routes to `/index.html` to allow React Router to handle client-side URLs seamlessly.
+The API routing is handled dynamically using a Vercel Edge Serverless Function (`api/proxy.js`) combined with `vercel.json` rewrite rules:
+- **`vercel.json`** routes all incoming traffic to `/api/*`, `/f/*`, and `/status` to `/api/proxy`.
+- **`api/proxy.js`** reads the **`BACKEND_URL`** environment variable from your Vercel Dashboard and proxies the requests to the respective target dynamically.
+- All other routes are rewritten to `/index.html` to allow React Router to handle client-side URLs seamlessly.
+
+#### Setting up Vercel Environment Variables:
+Add the following variable in your Vercel Project settings:
+- **`BACKEND_URL`**: Set this to your production backend URL (e.g., `https://smart-book-to-link.onrender.com`).
 
 ---
 
