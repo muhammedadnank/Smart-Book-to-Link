@@ -4,11 +4,13 @@
 
 <h1 align="center">✨ PageStream</h1>
 <p align="center">
-  <i>The ultimate premium Telegram File-to-Link streamer. Featuring a gorgeous glassmorphic UI, high-fidelity audio player, interactive in-browser eBook reader, and a resilient self-healing streaming engine.</i>
+  <i>The ultimate premium Telegram File-to-Link streamer. Featuring a gorgeous glassmorphic React SPA interface, high-fidelity audio player, interactive in-browser eBook reader, secure admin dashboard, and a resilient self-healing streaming engine.</i>
 </p>
 
 <p align="center">
   <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.13%2B-1e293b?style=for-the-badge&logo=python&logoColor=6366f1" alt="Python 3.13+"></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-19.0-1e293b?style=for-the-badge&logo=react&logoColor=61dafb" alt="React 19"></a>
+  <a href="https://vite.dev/"><img src="https://img.shields.io/badge/Vite-8.0-1e293b?style=for-the-badge&logo=vite&logoColor=a855f7" alt="Vite 8"></a>
   <a href="https://docs.kurigram.icu/"><img src="https://img.shields.io/badge/Kurigram-Latest-1e293b?style=for-the-badge&logo=telegram&logoColor=a855f7" alt="Kurigram"></a>
   <a href="LICENSE"><img src="https://img.shields.io/github/license/muhammedadnank/Smart-Book-to-Link?style=for-the-badge&color=10b981" alt="License"></a>
   <a href="https://github.com/muhammedadnank/Smart-Book-to-Link/tree/main"><img src="https://img.shields.io/badge/branch-main-1e293b?style=for-the-badge&logo=git&logoColor=34d399" alt="Branch: main"></a>
@@ -17,111 +19,255 @@
 
 ---
 
+## 📖 Table of Contents
+
+1. [Dual-Engine Architecture](#-dual-engine-architecture)
+2. [Premium Features](#-premium-features)
+3. [Technology Stack](#-technology-stack)
+4. [Supported Formats](#-supported-formats)
+5. [Database Architecture (MongoDB Schema)](#-database-architecture-mongodb-schema)
+6. [API Endpoint Reference](#-api-endpoint-reference)
+7. [Developer Guide: React SPA](#-developer-guide-react-spa)
+8. [Configuration Guide](#-configuration-guide)
+9. [Telegram Commands Reference](#-telegram-commands-reference)
+10. [Deployment Guide](#-deployment-guide)
+11. [License](#-license)
+
+---
+
+## ⚙️ Dual-Engine Architecture
+
+PageStream is designed with a unique **Dual-Engine Frontend Architecture** that adapts automatically based on compilation status:
+
+```
+                      +-----------------------------+
+                      | Incoming Stream/Admin Req   |
+                      +--------------+--------------+
+                                     |
+                      Is frontend/dist/index.html built?
+                                     |
+                    +----------------+----------------+
+                    | Yes                             | No
+                    v                                 v
+      +-----------------------------+   +-----------------------------+
+      |  🔥 React 19 SPA Engine     |   |  🍃 Jinja2 Template Engine  |
+      | - Clientside Route Matching |   | - Server-Side Generation     |
+      | - High-Fidelity App UI      |   | - No Compilation Required   |
+      | - JSON Rest API backend     |   | - Fast Server Fallback      |
+      +-----------------------------+   +-----------------------------+
+```
+
+*   **React 19 SPA Mode (Default / Production)**: When the frontend files are compiled using Vite (`frontend/dist/`), the backend automatically bypasses legacy views. Streaming, previews, and management routes are redirected to the modern single-page app containing glassmorphic styling, smooth micro-animations, and client-side rendering.
+*   **Jinja2 Server-Side fallback**: If the frontend project is not built, the backend seamlessly falls back to server-rendered Jinja2 templates (`ebook.html`, `req.html`, legacy `/admin` dashboard), allowing the system to run out-of-the-box without node dependencies if needed.
+
+---
+
 ## 🌟 Premium Features
 
-*   **📚 Ultimate In-Browser Reader**: Native support for `.pdf`, `.epub`, `.txt`, `.fb2`, `.djvu`, and `.cbz` files. Enjoy paginated flows, custom themes (light/dark/sepia), dynamic font scaling, and TOC generation directly in the browser—all powered by a fast, modular **Jinja2 template architecture**.
-*   **🎧 Atmospheric Audio Player**: High-fidelity web playback for audiobooks and music powered by **Vidstack**. Complete with interactive vinyl animations, a responsive mini-player (PiP), external app routing, and dynamic mobile-optimized UI.
-*   **⚡ High-Performance Engine**: Built on asynchronous Python (`aiohttp` + `Kurigram`), utilizing connection pooling, indexed database queries, **in-memory message caching** (30-min TTL), and optimized streaming buffers.
-*   **🔁 Self-Healing Connection Watchdog**: Automatically monitors all bot clients every 5 minutes. If connections drop and fail 3 consecutive checks, the service performs an emergency restart — zero manual intervention required.
-*   **🚀 CDN / Workers URL Fallback**: Optionally configure up to 3 Cloudflare Workers or CDN endpoints. PageStream randomly distributes fast-download links across them for maximum throughput and redundancy.
-*   **🎨 Stunning Glassmorphic UI**: Beautiful, modern neon design system with smooth micro-animations, particle effects, and dynamic gradients.
-*   **🔒 Strict Security**: Features per-user rate limiting (anti-spam protection), secure time-limited token generation (`TOKEN_ENABLED`), and channel join requirements.
-*   **🛡️ Secure Web Dashboard**: A fully responsive web dashboard to monitor system stats, manage files, and view live server logs.
-*   **🔄 Multi-Token Load Balancing**: Deploy multiple bot clients simultaneously to bypass Telegram API limits during heavy traffic.
+*   **📚 Ultimate In-Browser eBook Reader**: Supports paginated reading, customized themes (light, dark, sepia), canvas zoom controls, page memory, and automatic Table of Contents parsing.
+*   **🎧 Atmospheric Audio Player**: High-fidelity media streaming with specialized vinyl animations that spin/glow on-play. Supports speed controls, mini-player (PiP), and external route handlers (open in VLC, MX Player, PotPlayer, etc.).
+*   **⚡ Load-Balanced Multi-Client Engine**: Spawn multiple bot instances simultaneously via environment tokens (`MULTI_TOKEN1`, `MULTI_TOKEN2`, etc.) to distribute streaming loads and bypass Telegram API download speed limitations.
+*   **🔁 Self-Healing Connection Watchdog**: Monitors bot clients every 5 minutes. If a client drops offline and fails 3 consecutive pings, PageStream triggers an emergency restart to restore services.
+*   **🚀 CDN / Workers Fast Links**: Configure up to 3 alternative fast-download CDNs or Cloudflare Workers. PageStream automatically distributes requests across them for high throughput.
+*   **🔒 Granular Access Controls**: Features per-user rate limiting, anti-spam window queues, channel join requirements (Force Subscribe), and timed verification tokens.
+*   **🛡️ Secure Web Control Panel**: Features real-time CPU/RAM stats, database metrics, user ban/authorization controls, file query/management, and streamable server logs.
 
 ---
 
-## 📑 Table of Contents
+## 💻 Technology Stack
 
-1. [About The Project](#-about-the-project)
-2. [How It Works](#-how-it-works)
-3. [Supported Formats](#-supported-formats)
-4. [Advanced Media Viewers](#-advanced-media-viewers)
-5. [Configuration Guide](#-configuration-guide)
-6. [Commands Reference](#-commands-reference)
-7. [Deployment Guide](#-deployment-guide)
+### Backend Engine
+*   **Language**: Python 3.13+
+*   **Core MTProto Engine**: `Kurigram` (Optimized asynchronous Pyrogram fork) + `tgcrypto`
+*   **Web Framework**: `aiohttp` + `Jinja2` (Legacy Templates)
+*   **Database Client**: `pymongo` (Motor async adapter)
+*   **Event Loop**: `uvloop` (for high-concurrency socket performance)
+*   **Performance Monitoring**: `psutil`
 
----
-
-## 📖 About The Project
-
-**PageStream** transforms your Telegram document uploads into clean, high-speed HTTP(S) streamable links. By heavily leveraging modern browser APIs, the bot serves as an entire library management system—allowing users to read eBooks, manga, and listen to audiobooks instantly across all devices without requiring third-party applications.
-
-### 💡 Ideal For
-
-| Audience | Use Case |
-| :--- | :--- |
-| **📖 E-Readers & Manga Fans** | Read standard books (EPUB, PDF, FB2, TXT, DjVu) or Manga (CBZ) right in Safari/Chrome. |
-| **🎧 Audiobook Listeners** | Stream massive audiobook files with speed/pitch controls, mini-player support, and background play. |
-| **📁 Archival Channels** | Create custom link hubs for community courses, files, and documents. |
-| **🚀 Power Users** | Bypass Telegram's strict local download limitations and stream files concurrently via CDN fallbacks. |
-
----
-
-## ⚙️ How It Works
-
-```
-User Uploads File → Bot Validates Format → Forwards to BIN_CHANNEL → Returns Streaming Link
-                                                                    ↘ Optional: CDN Fast Link
-```
-
-1.  **Format Validation**: Files are checked on-the-fly. Unsupported extensions are instantly rejected with clean visual cards.
-2.  **Persistent Storage**: Files are saved securely in your private Telegram `BIN_CHANNEL` which acts as the source host.
-3.  **In-Memory Caching**: Resolved Telegram message objects are cached in RAM (30-min TTL) to eliminate redundant API calls during streaming.
-4.  **Dynamic Routing**: The web server detects the accessing device/browser and redirects to either the custom eBook Reader (`ebook.html`), the Audio Player (`req.html`), or triggers a direct download.
-5.  **Self-Healing**: A background watchdog continuously pings all connected clients. On repeated failures, it triggers an automatic process restart.
+### Frontend SPA
+*   **Framework**: React 19 + Vite 8
+*   **Router**: React Router 7 (Single-Page routing)
+*   **Styling**: Vanilla CSS (Tailored glassmorphism and modern UI system)
+*   **Icons**: Lucide React
+*   **Audio Core**: Vidstack Media Player
 
 ---
 
 ## 📂 Supported Formats
 
-> [!IMPORTANT]
-> Non-supported files (executables, videos, app packages, etc.) are blocked automatically to preserve bandwidth and keep operations clean.
-
 | Category | File Extensions | Associated Action / Viewer |
 | :--- | :--- | :--- |
 | **📚 In-Browser eBooks** | `.pdf` `.epub` `.txt` `.fb2` `.djvu` `.cbz` | **Interactive eBook / Comic Reader** |
-| **📲 Download-Only Books** | `.mobi` `.azw` `.azw3` `.lit` `.cbr` | Beautiful smart-prompt triggering download |
+| **📲 Download-Only Books** | `.mobi` `.azw` `.azw3` `.lit` `.cbr` | Smart-prompt visual download interface |
 | **🎧 Audiobooks** | `.mp3` `.m4b` `.m4a` `.ogg` `.flac` `.aac` `.wav` `.opus` | **Atmospheric Audio Player** |
 | **📄 Documents** | `.doc` `.docx` `.rtf` `.odt` | Document preview card + download |
 | **📦 Archives** | `.zip` `.rar` `.7z` `.tar` `.gz` | Direct download redirection |
 
 ---
 
-## 🎨 Advanced Media Viewers
+## 🗄️ Database Architecture (MongoDB Schema)
 
-### 📖 Modular eBook & Comic Reader (`ebook.html`)
-The reading engine dynamically loads the correct rendering module based on the file type, keeping memory footprints low. Built with a structured Jinja2 partial system (`_js_core`, `_js_pdf`, etc.) for seamless performance.
-*   **EPUBs (`epub.js`)**: Paginated text flow, Table of Contents navigation, font size adjustment, and light/dark/sepia styling.
-*   **PDFs (`pdf.js`)**: Hardware-accelerated canvas grids for crisp document rendering with responsive pinch-to-zoom.
-*   **FB2 & TXT (`DOMParser`)**: Instant custom XML parsing for Russian FB2 formats generating automatic TOCs, alongside native adjustable text viewers.
-*   **DjVu (`djvu.js`)**: Native WASM-powered DjVu image generation.
-*   **CBZ Comics (`jszip`)**: Client-side extraction of CBZ archives on-the-fly, displaying images sequentially as a continuous web-comic stream.
+PageStream uses MongoDB to store configurations, access logs, verification tokens, and cached file IDs. All collections feature optimized indexing to support high-throughput operations.
 
-### 🎧 Atmospheric Audio Player (`req.html`)
-*   Fully responsive, mobile-first audio control card featuring play, pause, seek, mute, volume, and playback speed adjustments.
-*   Powered by **Vidstack** for robust media handling and accessibility.
-*   Vinyl records animation that dynamically glows and spins only when audio is actively playing.
-*   **Mini Player (PiP)** mode for unobtrusive listening while browsing.
-*   "Open In" Drawer supporting external media applications like **VLC**, **MX Player**, **Infuse**, **PotPlayer**, and **MPV** on Android, iOS, and desktop environments.
+### Collection Schema Definitions
+
+#### 1. `users`
+Tracks Telegram users interacting with the bot.
+*   `id` (Int64, Unique Index): Telegram User ID.
+*   `first_name` (String): User's first name.
+*   `last_name` (String, Optional): User's last name.
+*   `username` (String, Optional): Telegram username.
+*   `join_date` (ISODate): Timestamp when the user first started the bot.
+
+#### 2. `authorized_users`
+Whitelist of users permitted to generate links when token security is enabled.
+*   `user_id` (Int64, Unique Index): Whitelisted user's ID.
+*   `authorized_by` (Int64): Owner/Admin ID who authorized the user.
+*   `authorized_at` (ISODate): Timestamp of authorization.
+
+#### 3. `banned_users`
+Restricts access to bot commands and stream interfaces.
+*   `user_id` (Int64, Unique Index): Banned user's ID.
+*   `reason` (String): Reason for the ban.
+*   `banned_at` (ISODate): Timestamp of the ban.
+
+#### 4. `banned_channels`
+List of channels restricted from requesting streams.
+*   `channel_id` (Int64, Unique Index): Banned Telegram channel ID.
+*   `reason` (String): Reason for restriction.
+*   `banned_at` (ISODate): Timestamp of the ban.
+
+#### 5. `tokens`
+Handles timed verification tokens.
+*   `token` (String, Unique Index): Unique generated session token.
+*   `user_id` (Int64): Telegram user who created/activated the token.
+*   `created_at` (ISODate): Generation timestamp.
+*   `expires_at` (ISODate, TTL Index): Automatic deletion trigger.
+*   `activated` (Boolean, Indexed): Activation status.
+
+#### 6. `files`
+Caches Telegram message locations to eliminate redundant file-lookup operations during stream downloads.
+*   `file_unique_id` (String, Unique Index): Telegram unique file hash identifier.
+*   `public_hash` (String, Unique Index): Custom generated hash for browser streaming URLs.
+*   `canonical_message_id` (Int32, Unique Index): Message ID of the file in the storage channel.
+*   `file_id` (String): Pyrogram file ID for reference.
+*   `file_name` (String, Search Index): Name of the file.
+*   `file_size` (Int64): Size of the file in bytes.
+*   `mime_type` (String): Mime type of the file.
+*   `created_at` (ISODate, Indexed): Indexed date of creation.
+*   `last_seen_at` (ISODate, Indexed): Tracks file popularity.
+*   `seen_count` (Int32): Tracking views / download counts.
 
 ---
 
-## 🛡️ Web Control Panel
+## 📡 API Endpoint Reference
 
-PageStream includes a built-in, secure web dashboard accessible at `/admin`. This premium, mobile-responsive interface allows the owner to seamlessly manage operations without writing commands:
-*   **Live Dashboard**: Monitor real-time CPU, RAM, active clients, uptime, and database records.
-*   **File Manager & Smart Maintenance**: View all indexed files, one-click delete specific links, and run automated cleanups (clear expired tokens and files older than 5 days).
-*   **User Management**: Instantly view the status of all registered users and manage access.
-*   **Live Server Logs**: View real-time terminal logs directly in your browser.
+When running in React SPA Mode, the backend serves as a REST API provider. All admin routes require the `admin_session` cookie containing the `ADMIN_PASSWORD`.
 
-*Note: Access to the dashboard is protected by a session cookie and requires the `ADMIN_PASSWORD` defined in your environment variables.*
+### Authentication
+*   **`POST /api/admin/login`**
+    *   *Body*: `{"password": "ADMIN_PASSWORD"}`
+    *   *Returns*: `{"success": true}` (Sets cookie `admin_session`)
+*   **`POST /api/admin/logout`**
+    *   *Returns*: `{"success": true}` (Clears cookie)
+
+### System Performance & Metrics
+*   **`GET /api/admin/stats`**
+    *   *Returns*: Core metrics showing total files, active users, authorized whitelists, uptime, bot active clients, and host CPU/RAM utilization.
+    *   *Example Response*:
+        ```json
+        {
+          "total_users": 284,
+          "authorized_users": 15,
+          "total_files": 1205,
+          "uptime": "2d 4h 12m",
+          "active_clients": 3,
+          "cpu": 12.4,
+          "ram": 58.2
+        }
+        ```
+
+### User Management
+*   **`GET /api/admin/users`**
+    *   *Returns*: A list of all users along with their authorization/ban flags and join dates.
+*   **`POST /api/admin/users/ban`**
+    *   *Body*: `{"user_id": 123456}`
+    *   *Returns*: `{"success": true}`
+*   **`POST /api/admin/users/unban`**
+    *   *Body*: `{"user_id": 123456}`
+    *   *Returns*: `{"success": true}`
+*   **`POST /api/admin/users/authorize`**
+    *   *Body*: `{"user_id": 123456}`
+    *   *Returns*: `{"success": true}`
+*   **`POST /api/admin/users/unauthorize`**
+    *   *Body*: `{"user_id": 123456}`
+    *   *Returns*: `{"success": true}`
+
+### File & Maintenance Control
+*   **`GET /api/admin/files`**
+    *   *Query Parameters*: `q` (Search query, optional)
+    *   *Returns*: Last 200 indexed files matching the query.
+*   **`POST /admin/files/delete/{hash}`**
+    *   *Returns*: `{"success": true}` (Deletes file index mapping)
+*   **`POST /admin/maintenance/clear_unused_files`**
+    *   *Returns*: `{"success": true, "deleted_count": N}` (Deletes links untouched for 5+ days)
+*   **`POST /admin/maintenance/clear_tokens`**
+    *   *Returns*: `{"success": true, "deleted_count": N}` (Purges expired authentication tokens)
+
+### System Log & Metadata
+*   **`GET /api/admin/logs`**
+    *   *Returns*: JSON object containing the last 150 lines of the server runtime log.
+*   **`GET /api/bot/info`**
+    *   *Returns*: Active username of the Telegram Bot client.
 
 ---
 
-## 🛠️ Configuration Guide
+## 🛠️ Developer Guide: React SPA
 
-Rename `config_sample.env` to `config.env` and fill in the parameters:
+Follow this guide to develop, customize, or build the glassmorphic React interface.
+
+### Project Structure
+```
+frontend/
+├── src/
+│   ├── components/       # Shared UI components (Modal, Cards, Alert)
+│   ├── pages/            # Viewers (Audio, Ebook, Download) and Dashboard Pages
+│   ├── App.jsx           # Main Routing & State setup
+│   ├── index.css         # Glassmorphic UI token style system
+│   └── main.jsx          # React app mount
+├── index.html
+├── vite.config.js        # Configures development proxies
+└── package.json
+```
+
+### Local Development Setup
+
+1.  **Start Python Backend**: Ensure the python backend server is running in dev mode on port `8080`.
+2.  **Install dependencies**:
+    ```bash
+    cd frontend
+    npm install
+    ```
+3.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
+    *The dev environment runs at `http://localhost:5173`. Vite configuration automatically proxies API and stream calls (`/api`, `/f`, `/admin/files`, etc.) to the python server running at `http://localhost:8080` to prevent CORS issues.*
+
+### Compiling for Production
+
+To compile and link the React interface directly into the Python backend:
+```bash
+cd frontend
+npm run build
+```
+Vite compiles all static assets into `frontend/dist/`. The backend will automatically detect the presence of `frontend/dist/index.html` on startup and switch to SPA mode.
+
+---
+
+## ⚙️ Configuration Guide
+
+Rename `config_sample.env` to `config.env` and adjust variables:
 
 ### Essential Variables
 
@@ -133,142 +279,116 @@ Rename `config_sample.env` to `config.env` and fill in the parameters:
 | `BIN_CHANNEL` | Private storage channel ID (must start with `-100`) | `-1001234567890` |
 | `OWNER_ID` | Telegram User ID of the primary admin | `987654321` |
 | `DATABASE_URL` | MongoDB Atlas database connection string | `mongodb+srv://...` |
-| `FQDN` | Host name of your deployment (no `https://` prefix) | `pagestream.onrender.com` |
+| `FQDN` | Domain name of deployment (no `https://` prefix) | `pagestream.onrender.com` |
 | `PORT` | Local network port to bind the server | `8080` |
 
-### Optional Variables
-
-<details>
-<summary>⚙️ View Optional Variables</summary>
+### Security & Rate Limiting Settings
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `NAME` | Application name identifier | `PageStreamF2L` |
-| `FORCE_CHANNEL_ID` | Requires users to join this channel before getting links | *(empty)* |
-| `RATE_LIMIT_ENABLED` | Limits user requests per minute to prevent spam | `False` |
-| `TOKEN_ENABLED` | Restricts access to links using timed user tokens | `False` |
-| `TOKEN_TTL_HOURS` | Duration in hours before a token expires | `24` |
-| `SLEEP_THRESHOLD` | Flood wait threshold in seconds | `600` |
-| `WORKERS` | Max asynchronous event loop worker threads | `8` |
-| `ADMIN_PASSWORD` | Password to access the `/admin` web control panel | `admin` |
-| `MULTI_TOKEN1` | Additional bot token to scale request handling | *(empty)* |
-| `MULTI_TOKEN2` | Second auxiliary token to scale request handling | *(empty)* |
-| `CONNECTION_CHECK_INTERVAL` | Seconds between connection watchdog pings | `300` |
-| `WORKERS_URL` | Primary CDN / Cloudflare Workers fast-download URL | *(empty)* |
-| `WORKERS_URL_2` | Secondary CDN fast-download URL | *(empty)* |
-| `WORKERS_URL_3` | Tertiary CDN fast-download URL | *(empty)* |
+| `FORCE_CHANNEL_ID` | Channel ID users must join before generating links | *(empty)* |
+| `RATE_LIMIT_ENABLED` | Enables request limits to protect against spam | `False` |
+| `MAX_FILES_PER_PERIOD` | Max file generation requests permitted per window | `2` |
+| `RATE_LIMIT_PERIOD_MINUTES`| Duration of the rate limit window in minutes | `1` |
+| `TOKEN_ENABLED` | Locks links behind timed session tokens | `False` |
+| `TOKEN_TTL_HOURS` | Duration in hours before user tokens expire | `24` |
+| `ADMIN_PASSWORD` | Password to access the `/admin` dashboard | `admin` |
 
-</details>
+### CDN, Performance & Multi-Client Settings
 
-### ⚡ CDN / Workers URL Setup
-
-PageStream supports Cloudflare Workers or any CDN as an optional fast-download fallback, inspired by the [filestreambot](https://github.com/EL-Coders/filestreambot) pattern.
-
-When one or more `WORKERS_URL` variables are set, each generated link will include an **⚡ Fast Download** button in addition to the standard stream and download buttons. PageStream randomly picks from the configured CDN URLs per request for load distribution.
-
-**What is a Workers URL?**
-A [Cloudflare Worker](https://workers.cloudflare.com/) is a free serverless proxy that can forward requests to your PageStream server from Cloudflare's global edge network, giving users faster downloads via a CDN. The Worker URL simply needs to proxy requests through to your `BASE_URL` — no custom code required for basic pass-through.
-
-> [!NOTE]
-> `WORKERS_URL` can also be any other CDN, reverse proxy, or alternative domain that points to the same PageStream server. It doesn't have to be Cloudflare.
-
-```env
-WORKERS_URL=https://my-worker.username.workers.dev
-WORKERS_URL_2=https://cdn2.example.com
-WORKERS_URL_3=https://cdn3.example.com
-```
-
-> [!TIP]
-> Leave all `WORKERS_URL` variables empty to disable this feature. The bot works perfectly without them.
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `WORKERS` | Max asynchronous event loop threads | `8` |
+| `SLEEP_THRESHOLD` | Flood wait recovery limit in seconds | `600` |
+| `MULTI_TOKEN1` | Additional bot client token for balancing | *(empty)* |
+| `MULTI_TOKEN2` | Second additional bot client token for balancing | *(empty)* |
+| `WORKERS_URL` | Primary CDN / Worker proxy URL | *(empty)* |
+| `WORKERS_URL_2` | Secondary CDN / Worker proxy URL | *(empty)* |
+| `WORKERS_URL_3` | Tertiary CDN / Worker proxy URL | *(empty)* |
+| `CONNECTION_CHECK_INTERVAL`| Watching ping interval in seconds | `300` |
 
 ---
 
-## 🤖 Commands Reference
+## 🤖 Telegram Commands Reference
 
-### 👤 User Commands
-*   `/start` — Initialize the bot, view welcome greeting, or validate token.
-*   `/link [N]` — Generate link(s). Reply to a file with `/link` (or `/link 5` for next 5 files).
-*   `/help` — Display list of supported formats and usage guidelines.
-*   `/ping` — Measure bot interaction latency.
-*   `/about` — View info, version, and developer details.
+### 👤 Regular Users
+*   `/start` — Start the bot, view welcome greeting, or validate timed token access.
+*   `/link [N]` — Reply to a file with `/link` to generate stream links (or `/link 5` to process the next 5 files).
+*   `/help` — Check list of supported file formats and reader details.
+*   `/ping` — Check bot response latency.
+*   `/about` — View app details, version, and license.
 *   `/dc` — Query the Telegram datacenter hosting a specific file.
 
-### 🔧 Admin Commands
-*   `/status` — Show system stats (CPU, memory load, network, uptime).
-*   `/stats` — View total database metrics (total users, total links).
-*   `/ban` / `/unban` — Block or unblock users from accessing services.
-*   `/authorize` / `/deauthorize` — Manage permanent access for users.
-*   `/broadcast` — Send an announcement message to all bot users.
-*   `/log` — View and fetch execution logs.
-*   `/restart` — Restart the running server instance.
-*   `/speedtest` — Perform a network speed check on the hosting server.
+### 🔧 Administrators
+*   `/status` — View real-time CPU, RAM, active clients workload, and server uptime.
+*   `/stats` — View aggregate database counts (total users, indexed files).
+*   `/ban` / `/unban` — Ban or unban a user from using the bot/streaming links.
+*   `/authorize` / `/deauthorize` — Whitelist/remove a user from permanent token bypass.
+*   `/broadcast` — Broadcast a markdown announcement message to all registered users.
+*   `/log` — Fetch the application runtime log file.
+*   `/restart` — Perform a safe restart of the application server.
+*   `/speedtest` — Run a network speed test directly on the hosting server.
 
 ---
 
 ## 🚀 Deployment Guide
 
-### Render (One-Click)
+### Option A: Docker Compose (Recommended)
+
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
+    cd Smart-Book-to-Link
+    ```
+2.  Configure environment:
+    ```bash
+    cp config_sample.env config.env
+    nano config.env
+    ```
+3.  Ensure the frontend is compiled for production (so Docker copies the built dist):
+    ```bash
+    cd frontend && npm install && npm run build && cd ..
+    ```
+4.  Run using Docker Compose:
+    ```bash
+    docker-compose up -d --build
+    ```
+
+### Option B: Render.com (One-Click)
 
 1.  Click the deploy button:
 
     [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/muhammedadnank/Smart-Book-to-Link)
 
 2.  Fill in the required Environment Variables.
-3.  Once the build succeeds, copy the public URL, set it as `FQDN` in settings, and re-trigger deployment.
+3.  Once the build finishes, copy the public URL, set it as `FQDN` in the settings, and re-trigger deployment.
 
----
+### Option C: Manual Virtualenv Setup
 
-### 🐳 Docker & Docker Compose
-
-```bash
-# 1. Clone the repository
-git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
-cd Smart-Book-to-Link
-
-# 2. Add configuration
-cp config_sample.env config.env
-nano config.env
-
-# 3. Run with Docker Compose (Recommended)
-docker-compose up -d --build
-
-# OR Run manually without compose:
-# docker build -f docker/Dockerfile -t pagestream .
-# docker run -d --name pagestream --env-file config.env -p 8080:8080 pagestream
-```
-
----
-
-### 🖥️ Manual / Virtualenv
-
-```bash
-# 1. Clone the repository
-git clone -b main https://github.com/muhammedadnank/Smart-Book-to-Link.git
-cd Smart-Book-to-Link
-
-# 2. Virtual environment setup
-python3 -m venv venv
-source venv/bin/activate
-
-# 3. Dependencies installation
-pip install -r requirements.txt
-
-# 4. Start the application
-cp config_sample.env config.env
-nano config.env
-python3 -m PageStream
-```
-
----
-
-## 💻 Tech Stack
-
-*   **Core MTProto Engine**: `Kurigram` (Modern Pyrogram branch) + `tgcrypto`
-*   **Web Framework**: `aiohttp` + `Jinja2` dynamic modular partials
-*   **Database Client**: `pymongo`
-*   **Event Loop**: `uvloop`
-*   **Performance Monitoring**: `psutil`
-*   **Media Readers**: `epub.js`, `pdf.js`, `jszip`, `djvu.js`, Native DOM Parsing, `Vidstack`
+1.  Clone repository:
+    ```bash
+    git clone https://github.com/muhammedadnank/Smart-Book-to-Link.git
+    cd Smart-Book-to-Link
+    ```
+2.  Set up Virtual Environment:
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+3.  Install Backend Dependencies:
+    ```bash
+    pip install -r requirements.txt
+    ```
+4.  Compile Frontend React SPA:
+    ```bash
+    cd frontend && npm install && npm run build && cd ..
+    ```
+5.  Start the service:
+    ```bash
+    cp config_sample.env config.env
+    nano config.env
+    bash pagestream.sh
+    ```
 
 ---
 

@@ -10,7 +10,9 @@ async def web_server():
     
     # Add static route for assets
     import os
-    if os.path.isdir("assets"):
+    if os.path.isdir("frontend/dist/assets"):
+        web_app.router.add_static('/assets/', 'frontend/dist/assets', name='assets')
+    elif os.path.isdir("assets"):
         web_app.router.add_static('/assets/', 'assets', name='assets')
         
     return web_app

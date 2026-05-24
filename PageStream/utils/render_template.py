@@ -89,6 +89,27 @@ async def render_media_page(
     requested_action: str | None = None,
     mime_type: str | None = None,
 ) -> str:
+    # Check if SPA is available and should be served
+    import os
+    if os.path.exists("frontend/dist/index.html"):
+        from aiohttp import web
+        category = get_file_category(file_name)
+        ebook_type = _get_ebook_type(file_name, mime_type)
+        if ebook_type:
+            category = 'ebooks'
+            
+        encoded_fn = urllib.parse.quote(file_name)
+        encoded_src = urllib.parse.quote(src)
+        
+        if category == 'ebooks':
+            redirect_url = f"/watch/ebook?file_name={encoded_fn}&src={encoded_src}"
+        elif category == 'audiobooks':
+            redirect_url = f"/watch/audio?file_name={encoded_fn}&src={encoded_src}"
+        else:
+            redirect_url = f"/watch/download?file_name={encoded_fn}&src={encoded_src}"
+            
+        raise web.HTTPFound(redirect_url)
+
     # NOTE: src must be a pre-encoded URL. Templates use |safe to avoid double-encoding.
     category = get_file_category(file_name)
     ebook_type = _get_ebook_type(file_name, mime_type)
@@ -164,6 +185,9 @@ async def render_page(
         return await render_media_page(file_name, src, requested_action, mime_type=mime_type)
 
     except Exception as e:
+        from aiohttp import web
+        if isinstance(e, web.HTTPException):
+            raise
         logger.error(
             f"Error in render_page for message_id {message_id} and hash {secure_hash}: {e}",
             exc_info=True

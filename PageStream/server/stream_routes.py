@@ -342,6 +342,8 @@ async def canonical_media_preview(request: web.Request):
         logger.debug(f"Canonical preview error: {type(e).__name__} - {e}", exc_info=True)
         raise web.HTTPNotFound(text="Resource not found") from e
     except Exception as e:
+        if isinstance(e, web.HTTPException):
+            raise
         error_id = secrets.token_hex(6)
         logger.error(f"Canonical preview error {error_id}: {e}", exc_info=True)
         raise web.HTTPInternalServerError(
@@ -375,6 +377,8 @@ async def media_preview(request: web.Request):
             exc_info=True)
         raise web.HTTPNotFound(text="Resource not found") from e
     except Exception as e:
+        if isinstance(e, web.HTTPException):
+            raise
         error_id = secrets.token_hex(6)
         logger.error(f"Preview error {error_id}: {e}", exc_info=True)
         raise web.HTTPInternalServerError(
@@ -439,11 +443,20 @@ async def canonical_media_delivery(request: web.Request):
             text=f"An unexpected server error occurred: {error_id}") from e
 
 
+def is_spa_available() -> bool:
+    import os
+    return os.path.exists("frontend/dist/index.html")
+
+async def serve_spa_index(request: web.Request):
+    return web.FileResponse("frontend/dist/index.html")
+
 def is_admin_session(request: web.Request) -> bool:
     return request.cookies.get("admin_session") == Var.ADMIN_PASSWORD
 
 @routes.get("/admin", allow_head=True)
 async def admin_dashboard(request: web.Request):
+    if is_spa_available():
+        return await serve_spa_index(request)
     if not is_admin_session(request):
         return web.HTTPFound("/admin/login")
     
@@ -469,6 +482,8 @@ async def admin_dashboard(request: web.Request):
 
 @routes.get("/admin/login", allow_head=True)
 async def admin_login_get(request: web.Request):
+    if is_spa_available():
+        return await serve_spa_index(request)
     if is_admin_session(request):
         return web.HTTPFound("/admin")
     template = template_env.get_template('admin/login.html')
@@ -497,6 +512,8 @@ async def admin_logout(request: web.Request):
 
 @routes.get("/admin/users", allow_head=True)
 async def admin_users(request: web.Request):
+    if is_spa_available():
+        return await serve_spa_index(request)
     if not is_admin_session(request):
         return web.HTTPFound("/admin/login")
     
@@ -514,6 +531,8 @@ async def admin_users(request: web.Request):
 
 @routes.get("/admin/files", allow_head=True)
 async def admin_files(request: web.Request):
+    if is_spa_available():
+        return await serve_spa_index(request)
     if not is_admin_session(request):
         return web.HTTPFound("/admin/login")
     
@@ -550,7 +569,6 @@ async def admin_clear_unused_files(request: web.Request):
     if not is_admin_session(request):
         return web.json_response({"error": "Unauthorized"}, status=401)
     
-    # 5 days ago
     cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=5)
     result = await db.files_col.delete_many({"last_seen_at": {"$lt": cutoff}})
     return web.json_response({"success": True, "deleted_count": result.deleted_count})
@@ -564,9 +582,10 @@ async def admin_clear_tokens(request: web.Request):
     result = await db.token_col.delete_many({"expires_at": {"$lt": now}})
     return web.json_response({"success": True, "deleted_count": result.deleted_count})
 
-
 @routes.get("/admin/logs", allow_head=True)
 async def admin_logs(request: web.Request):
+    if is_spa_available():
+        return await serve_spa_index(request)
     if not is_admin_session(request):
         return web.HTTPFound("/admin/login")
     
@@ -586,6 +605,233 @@ async def admin_logs(request: web.Request):
     template = template_env.get_template('admin/logs.html')
     html = await template.render_async(logs=logs, log_path=os.path.basename(LOG_FILE) if 'LOG_FILE' in locals() else "Unknown")
     return web.Response(text=html, content_type="text/html")
+
+
+# --- React SPA Support Routes & JSON APIs ---
+
+@routes.get("/watch/ebook", allow_head=True)
+async def watch_ebook_spa(request: web.Request):
+    return await serve_spa_index(request)
+
+@routes.get("/watch/audio", allow_head=True)
+async def watch_audio_spa(request: web.Request):
+    return await serve_spa_index(request)
+
+@routes.get("/watch/download", allow_head=True)
+async def watch_download_spa(request: web.Request):
+    return await serve_spa_index(request)
+
+@routes.post("/api/admin/login")
+async def api_admin_login_post(request: web.Request):
+    try:
+        data = await request.json()
+    except Exception:
+        return web.json_response({"error": "Invalid JSON format"}, status=400)
+    password = data.get("password")
+    
+    if password == Var.ADMIN_PASSWORD:
+        response = web.json_response({"success": True})
+        response.set_cookie("admin_session", password, max_age=86400 * 30) # 30 days
+        return response
+        
+    return web.json_response({"error": "Invalid password"}, status=401)
+
+@routes.post("/api/admin/logout")
+async def api_admin_logout(request: web.Request):
+    response = web.json_response({"success": True})
+    response.del_cookie("admin_session")
+    return response
+
+@routes.get("/api/admin/stats", allow_head=True)
+async def api_admin_stats(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    total_users = await db.total_users_count()
+    authorized_users = await db.get_authorized_users_count()
+    total_files = await db.files_col.count_documents({})
+    uptime = get_readable_time(time.time() - StartTime)
+    active_clients = sum(1 for load in work_loads.values() if load > 0)
+    cpu_usage = psutil.cpu_percent(interval=None)
+    ram_usage = psutil.virtual_memory().percent
+    
+    return web.json_response({
+        "total_users": total_users,
+        "authorized_users": authorized_users,
+        "total_files": total_files,
+        "uptime": uptime,
+        "active_clients": active_clients,
+        "cpu": cpu_usage,
+        "ram": ram_usage
+    })
+
+@routes.get("/api/admin/users", allow_head=True)
+async def api_admin_users(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    cursor = await db.get_all_users()
+    users = await cursor.to_list(length=None)
+    
+    serializable_users = []
+    for u in users:
+        user_id = u['id']
+        is_auth = await db.is_user_authorized(user_id)
+        is_ban = await db.is_user_banned(user_id)
+        is_owner = (user_id == Var.OWNER_ID)
+        
+        join_date = u.get('join_date')
+        if isinstance(join_date, (datetime.datetime, datetime.date)):
+            join_date = join_date.isoformat()
+            
+        serializable_users.append({
+            "id": user_id,
+            "is_authorized": bool(is_auth),
+            "is_banned": bool(is_ban),
+            "is_owner": is_owner,
+            "join_date": join_date or None
+        })
+        
+    return web.json_response(serializable_users)
+
+@routes.post("/api/admin/users/ban")
+async def api_admin_user_ban(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    try:
+        data = await request.json()
+        user_id = int(data.get("user_id"))
+    except Exception:
+        return web.json_response({"error": "Invalid request body"}, status=400)
+        
+    if user_id == Var.OWNER_ID:
+        return web.json_response({"error": "Cannot ban the owner"}, status=400)
+        
+    await db.add_banned_user(user_id, reason="Banned via Admin Dashboard")
+    return web.json_response({"success": True})
+
+@routes.post("/api/admin/users/unban")
+async def api_admin_user_unban(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    try:
+        data = await request.json()
+        user_id = int(data.get("user_id"))
+    except Exception:
+        return web.json_response({"error": "Invalid request body"}, status=400)
+        
+    await db.remove_banned_user(user_id)
+    return web.json_response({"success": True})
+
+@routes.post("/api/admin/users/authorize")
+async def api_admin_user_authorize(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    try:
+        data = await request.json()
+        user_id = int(data.get("user_id"))
+    except Exception:
+        return web.json_response({"error": "Invalid request body"}, status=400)
+        
+    from PageStream.utils.tokens import authorize
+    await authorize(user_id, authorized_by=Var.OWNER_ID)
+    return web.json_response({"success": True})
+
+@routes.post("/api/admin/users/unauthorize")
+async def api_admin_user_unauthorize(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    try:
+        data = await request.json()
+        user_id = int(data.get("user_id"))
+    except Exception:
+        return web.json_response({"error": "Invalid request body"}, status=400)
+        
+    if user_id == Var.OWNER_ID:
+        return web.json_response({"error": "Cannot deauthorize the owner"}, status=400)
+        
+    from PageStream.utils.tokens import deauthorize
+    await deauthorize(user_id)
+    return web.json_response({"success": True})
+
+@routes.get("/api/admin/files", allow_head=True)
+async def api_admin_files(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    query = request.query.get("q", "").strip()
+    search_filter = {}
+    if query:
+        search_filter = {
+            "$or": [
+                {"file_name": {"$regex": query, "$options": "i"}},
+                {"public_hash": {"$regex": query, "$options": "i"}}
+            ]
+        }
+        
+    cursor = db.files_col.find(search_filter).sort("created_at", -1).limit(200)
+    files = await cursor.to_list(length=None)
+    
+    serializable_files = []
+    for f in files:
+        created_at = f.get('created_at')
+        if isinstance(created_at, (datetime.datetime, datetime.date)):
+            created_at = created_at.isoformat()
+            
+        last_seen_at = f.get('last_seen_at')
+        if isinstance(last_seen_at, (datetime.datetime, datetime.date)):
+            last_seen_at = last_seen_at.isoformat()
+            
+        serializable_files.append({
+            "file_name": f.get("file_name"),
+            "file_size": f.get("file_size"),
+            "mime_type": f.get("mime_type"),
+            "public_hash": f.get("public_hash"),
+            "created_at": created_at,
+            "last_seen_at": last_seen_at,
+            "seen_count": f.get("seen_count", 0),
+            "views": f.get("seen_count", 0)
+        })
+        
+    return web.json_response(serializable_files)
+
+@routes.get("/api/admin/logs", allow_head=True)
+async def api_admin_logs(request: web.Request):
+    if not is_admin_session(request):
+        return web.json_response({"error": "Unauthorized"}, status=401)
+    
+    logs = ""
+    log_file_name = "Unknown"
+    try:
+        import os
+        from PageStream.utils.logger import LOG_FILE
+        log_file_name = os.path.basename(LOG_FILE)
+        if os.path.exists(LOG_FILE):
+            with open(LOG_FILE, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+                logs = "".join(lines[-150:])
+        else:
+            logs = f"Log file not found at {LOG_FILE}"
+    except Exception as e:
+        logs = f"Error reading logs: {e}"
+        
+    return web.json_response({
+        "logs": logs,
+        "log_path": log_file_name
+    })
+
+@routes.get("/api/bot/info")
+async def api_bot_info(request: web.Request):
+    username = getattr(StreamBot, "username", None)
+    if not username:
+        if StreamBot.is_connected:
+            try:
+                me = await StreamBot.get_me()
+                username = me.username
+                StreamBot.username = username
+            except Exception:
+                pass
+    return web.json_response({"username": username or "FileToLinkBot"})
 
 
 def _rebuild_pyrogram_file_id(stored_file_id: str, file_ref_b64: str) -> str | None:
@@ -715,6 +961,14 @@ async def watch_by_file_id(request: web.Request):
 async def media_delivery(request: web.Request):
     try:
         path = request.match_info["path"]
+        
+        # Serve static assets from frontend/dist if they physically exist
+        import os
+        if not (".." in path or path.startswith("/") or path.startswith("\\")):
+            dist_file = os.path.join("frontend/dist", path)
+            if os.path.isfile(dist_file):
+                return web.FileResponse(dist_file)
+                
         message_id, secure_hash = parse_media_request(path, request.query)
 
         client_id, streamer = select_optimal_client()
